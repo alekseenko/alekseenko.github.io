@@ -7,6 +7,16 @@
 		<title>Andy Alekseenko</title>
 		<link href="https://fonts.googleapis.com/css?family=Cabin" rel="stylesheet">
 		<link href="./styles/global.css" rel="stylesheet">
+		<script>
+			(function(){
+				var t,i,e,n=window,o=document,a=arguments,s="script",r=["config","track","identify","visit","push","call","trackForm","trackClick"],c=function(){var t,i=this;for(i._e=[],t=0;r.length>t;t++)(function(t){i[t]=function(){return i._e.push([t].concat(Array.prototype.slice.call(arguments,0))),i}})(r[t])};for(n._w=n._w||{},t=0;a.length>t;t++)n._w[a[t]]=n[a[t]]=n[a[t]]||new c;i=o.createElement(s),i.async=1,i.src="//static.woopra.com/js/w.js",e=o.getElementsByTagName(s)[0],e.parentNode.insertBefore(i,e)
+			})("woopra");
+
+			woopra.config({
+				domain: 'alekseenko.github.io'
+			});
+			woopra.track();
+		</script>
 	</head>
 	<body>
 		<div class="container">
@@ -46,10 +56,13 @@
 				}
 
 				if (index + 1 === magicSequence.length) {
+					woopra.track("easter_egg_found");
+
 					let song = new Audio('./misc/dance.mp3');
 					song.volume = 0.5;
 					song.loop = true;
 					song.play();
+
 					document.body.classList.add('dance');
 					document.body.removeEventListener('keydown', onKeydown);
 					document.body.querySelector('#easter-egg-script').remove();
