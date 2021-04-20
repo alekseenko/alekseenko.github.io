@@ -65,6 +65,7 @@
 
                     if (index + 1 === magicSequence.length) {
                         woopra.track("easter_egg_found");
+                        analytics.track("Easter Egg Found");
 
                         let song = new Audio('./misc/dance.mp3');
                             song.volume = 0.5;
@@ -86,6 +87,7 @@
         <script>
             let trackOutbound = function(e) {
                 woopra.track("outbound_link_clicked", { url: $(e.target).attr('href') });
+                analytics.track("Outbound Link Clicked", { url: $(e.target).attr('href') });
             }
 
             $('a[target="_blank"]').on('click', trackOutbound);
