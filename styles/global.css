@@ -6,6 +6,10 @@ body {
 	font-size: 16px;
 }
 
+.mobile-show {
+	display: none;
+}
+
 .container {
 	display: flex;
 }
@@ -49,29 +53,47 @@ body {
 	margin-left: 7px;
 }
 
-.window-content {
+.editor-tabs {
 	display: flex;
+	width: 100%;
 }
 
 .editor-tab-header {
 	background-color: hsl(200, 5%, 24%);
 	color: hsl(211, 20%, 72%);
 	font-size: 14px;
+	display: flex;
+	justify-content: space-between;
 }
 
 .editor-tab-name {
 	background-color: hsl(197, 4%, 31%);
-	padding: 5px 10px;
 	border-bottom: 3px solid hsl(205, 63%, 49%);
-	display: inline-block;
+	padding: 5px 10px;
+	cursor: pointer;
+	-moz-user-select: none;
+	-khtml-user-select: none;
+	-webkit-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
 }
 
 .editor-first-tab {
-	border-right: 1px solid hsl(0, 0%, 20%);
+	flex: 1;
+}
+
+.editor-separate-tabs {
+	width: 200px;
+	display: flex;
+	border-left: 1px solid hsl(0, 0%, 20%);
 }
 
 .editor-tab-content {
 	border-top: 1px solid hsl(0, 0%, 20%);
+	background-color: hsl(0, 0%, 17%);
+	color: hsl(211, 20%, 72%);
+	display: flex;
+	width: 100%;
 }
 
 .editor-lines {
@@ -80,12 +102,6 @@ body {
 	color: hsl(0, 0%, 33%);
 	border-right: 1px solid hsl(0, 0%, 33%);
 	padding: 2px 0 5px 5px;
-}
-
-.editor-tab-content {
-	background-color: hsl(0, 0%, 17%);
-	color: hsl(211, 20%, 72%);
-	display: flex;
 }
 
 .editor-code {
@@ -131,6 +147,7 @@ body {
 }
 
 .editor-second-tab {
+	border-left: 1px solid hsl(0, 0%, 20%);
 	display: flex;
 	flex-direction: column;
 }
@@ -142,18 +159,100 @@ body {
 	flex: 1;
 }
 
+.editor-second-tab img {
+	width: 200px;
+	height: 200px;
+}
+
 @media screen and (max-width: 980px) {
+	body {
+		font-size: 14px;
+	}
+
 	.window {
-		margin: 0 10px;
+		margin: 0 5px;
+		width: calc(100% - 10px);
+		overflow: hidden;
+	}
+
+	.titlebar {
+		height: 40px;
+	}
+
+	.editor-tab-header {
+		font-size: 12px;
+	}
+
+	.editor-lines {
+		width: 25px;
+	}
+
+	.editor-code {
+		width: calc(100% - 30px);
+	}
+
+	.editor-code .rb-line {
+		width: calc(100% - 25px);
+		overflow-wrap: break-word;
 	}
 }
 
 @media screen and (max-width: 710px) {
 	body {
-		padding-top: 10px;
+		padding-top: 5px;
 	}
 
-	.editor-second-tab {
+	.editor-tab-header {
+		justify-content: normal;
+	}
+
+	.editor-tab-name {
+		background-color: hsl(200, 5%, 24%);
+		border-bottom: 3px solid hsl(200, 5%, 24%);
+	}
+
+	.editor-tab-name.active {
+		background-color: hsl(197, 4%, 31%);
+		border-color: hsl(205, 63%, 49%);
+	}
+
+	.editor-tab-name:not(.active):hover {
+		background-color: hsl(200, 4%, 16%);
+		border-color: hsl(200, 4%, 16%);
+	}
+
+	.editor-tab {
+		display: none;
+	}
+
+	.editor-tab.active {
+		display: flex;
+	}
+
+	.editor-first-tab, .editor-second-tab {
+		width: 100%;
+	}
+
+	.editor-second-tab img {
+		width: 300px;
+		height: 300px;
+		margin: 0 auto;
+	}
+
+	.editor-second-tab .editor-tab-content {
+		position: relative;
+	}
+
+	.editor-second-tab .editor-tab-content .easter-egg {
+		left: 0;
+		right: 0;
+	}
+
+	.mobile-show {
+		display: block;
+	}
+
+	.mobile-hide {
 		display: none;
 	}
 }

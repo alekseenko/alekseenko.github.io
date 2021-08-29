@@ -35,89 +35,95 @@
                     <div class="dot maximise"></div>
                 </div>
                 <div class="window-content">
-                    <div class="editor-first-tab">
-                        <div class="editor-tab-header">
-                            <div class="editor-tab-name">
-                                seeds.rb
-                            </div>
+                    <div class="editor-tab-header">
+                        <div class="editor-tab-name active js-tab" data-tab="first_tab">
+                            seeds.rb
                         </div>
-                        <div class="editor-tab-content">
-                            <div class="editor-lines">
-                                <div class="rb-line">1</div>
-                                <div class="rb-line">2</div>
-                                <div class="rb-line">3</div>
-                                <div class="rb-line">4</div>
-                                <div class="rb-line">5</div>
-                                <div class="rb-line">6</div>
-                                <div class="rb-line">7</div>
-                                <div class="rb-line">8</div>
-                                <div class="rb-line">9</div>
-                                <div class="rb-line">10</div>
-                                <div class="rb-line">11</div>
-                                <div class="rb-line">12</div>
-                                <div class="rb-line">13</div>
-                                <div class="rb-line">14</div>
-                                <div class="rb-line">15</div>
-                                <div class="rb-line">16</div>
-                                <div class="rb-line">17</div>
-                                <div class="rb-line">18</div>
-                                <div class="rb-line">19</div>
-                                <div class="rb-line">20</div>
-                            </div>
-                            <div class="editor-code">
-                                <div class="rb-line">
-                                    <span class="rb-variable">profile</span> <span class="rb-operator">=</span> <span class="rb-class">Profile</span>.create!(
-                                </div>
-                                <div class="rb-line rb-nested">
-                                    <span class="rb-symbol">name</span>: <span class="rb-string">'Andy Alekseenko'</span>,
-                                </div>
-                                <div class="rb-line rb-nested">
-                                    <span class="rb-symbol">position</span>: <span class="rb-string">'Ruby on Rails developer at <a href="https://storylane.io" target="_blank">Storylane</a>'</span>,
-                                </div>
-                                <div class="rb-line rb-nested">
-                                    <span class="rb-symbol">employed</span>: <span class="rb-bool">true</span>,
-                                </div>
-                                <div class="rb-line rb-nested">
-                                    <span class="rb-symbol">email</span>: <span class="rb-string">'<a href="mailto:mailto.alekseenko@gmail.com" target="_blank">mailto.alekseenko@gmail.com</a>'</span>,
-                                </div>
-                                <div class="rb-line rb-nested">
-                                    <span class="rb-symbol">about</span>: <span class="rb-string">'Strong web developer with great communication and teamwork skills'</span>
-                                </div>
-                                <div class="rb-line">)</div>
-
-                                <div class="rb-line">
-                                    <span class="rb-variable">profile</span>.socials.create!(
-                                </div>
-                                <div class="rb-line rb-nested">
-                                    <span class="rb-symbol">kind</span>: <span class="rb-symbol">:github</span>,
-                                </div>
-                                <div class="rb-line rb-nested">
-                                    <span class="rb-symbol">url</span>: <span class="rb-string">'<a href="https://github.com/alekseenko" target="_blank">https://github.com/alekseenko</a>'</span>
-                                </div>
-                                <div class="rb-line">)</div>
-
-                                <div class="rb-line">
-                                    <span class="rb-variable">profile</span>.socials.create!(
-                                </div>
-                                <div class="rb-line rb-nested">
-                                    <span class="rb-symbol">kind</span>: <span class="rb-symbol">:linkedin</span>,
-                                </div>
-                                <div class="rb-line rb-nested">
-                                    <span class="rb-symbol">url</span>: <span class="rb-string">'<a href="https://www.linkedin.com/in/alekseenkoandy" target="_blank">https://www.linkedin.com/in/alekseenkoandy</a>'</span>
-                                </div>
-                                <div class="rb-line">)</div>
-                            </div>
+                        <div class="editor-tab-name mobile-show js-tab" data-tab="second_tab">
+                            photo.jpg
                         </div>
-                    </div>
-                    <div class="editor-second-tab">
-                        <div class="editor-tab-header">
-                            <div class="editor-tab-name">
+
+                        <div class="editor-separate-tabs mobile-hide">
+                            <div class="editor-tab-name active">
                                 photo.jpg
                             </div>
                         </div>
-                        <div class="editor-tab-content">
-                            <img src="img/deal-with-it.png" class="deal-with-it easter-egg" alt="deal with it" width="200" height="200" />
-                            <img src="img/photo.jpg" alt="photo" width="200" height="200" />
+                    </div>
+                    <div class="editor-tabs">
+                        <div id="first_tab" class="editor-tab editor-first-tab active">
+                            <div class="editor-tab-content">
+                                <div class="editor-lines">
+                                    <div class="rb-line">1</div>
+                                    <div class="rb-line">2</div>
+                                    <div class="rb-line">3</div>
+                                    <div class="rb-line">4</div>
+                                    <div class="rb-line">5</div>
+                                    <div class="rb-line">6</div>
+                                    <div class="rb-line">7</div>
+                                    <div class="rb-line">8</div>
+                                    <div class="rb-line">9</div>
+                                    <div class="rb-line">10</div>
+                                    <div class="rb-line">11</div>
+                                    <div class="rb-line">12</div>
+                                    <div class="rb-line">13</div>
+                                    <div class="rb-line">14</div>
+                                    <div class="rb-line">15</div>
+                                    <div class="rb-line">16</div>
+                                    <div class="rb-line">17</div>
+                                    <div class="rb-line">18</div>
+                                    <div class="rb-line">19</div>
+                                    <div class="rb-line">20</div>
+                                </div>
+                                <div class="editor-code">
+                                    <div class="rb-line">
+                                        <span class="rb-variable">profile</span> <span class="rb-operator">=</span> <span class="rb-class">Profile</span>.create!(
+                                    </div>
+                                    <div class="rb-line rb-nested">
+                                        <span class="rb-symbol">name</span>:&nbsp;<span class="rb-string">'Andy Alekseenko'</span>,
+                                    </div>
+                                    <div class="rb-line rb-nested">
+                                        <span class="rb-symbol">position</span>:&nbsp;<span class="rb-string">'Ruby on Rails developer at <a href="https://storylane.io" target="_blank">Storylane</a>'</span>,
+                                    </div>
+                                    <div class="rb-line rb-nested">
+                                        <span class="rb-symbol">employed</span>:&nbsp;<span class="rb-bool">true</span>,
+                                    </div>
+                                    <div class="rb-line rb-nested">
+                                        <span class="rb-symbol">email</span>:&nbsp;<span class="rb-string">'<a href="mailto:mailto.alekseenko@gmail.com" target="_blank">mailto.alekseenko@gmail.com</a>'</span>,
+                                    </div>
+                                    <div class="rb-line rb-nested">
+                                        <span class="rb-symbol">about</span>:&nbsp;<span class="rb-string">'Strong web developer with great communication and teamwork skills'</span>
+                                    </div>
+                                    <div class="rb-line">)</div>
+
+                                    <div class="rb-line">
+                                        <span class="rb-variable">profile</span>.socials.create!(
+                                    </div>
+                                    <div class="rb-line rb-nested">
+                                        <span class="rb-symbol">kind</span>:&nbsp;<span class="rb-symbol">:github</span>,
+                                    </div>
+                                    <div class="rb-line rb-nested">
+                                        <span class="rb-symbol">url</span>:&nbsp;<span class="rb-string">'<a href="https://github.com/alekseenko" target="_blank">https://github.com/alekseenko</a>'</span>
+                                    </div>
+                                    <div class="rb-line">)</div>
+
+                                    <div class="rb-line">
+                                        <span class="rb-variable">profile</span>.socials.create!(
+                                    </div>
+                                    <div class="rb-line rb-nested">
+                                        <span class="rb-symbol">kind</span>:&nbsp;<span class="rb-symbol">:linkedin</span>,
+                                    </div>
+                                    <div class="rb-line rb-nested">
+                                        <span class="rb-symbol">url</span>:&nbsp;<span class="rb-string">'<a href="https://www.linkedin.com/in/alekseenkoandy" target="_blank">https://www.linkedin.com/in/alekseenkoandy</a>'</span>
+                                    </div>
+                                    <div class="rb-line">)</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="second_tab" class="editor-tab editor-second-tab">
+                            <div class="editor-tab-content">
+                                <img src="img/deal-with-it.png" class="deal-with-it easter-egg" alt="deal with it" />
+                                <img src="img/photo.jpg" alt="photo" class="photo" />
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -168,13 +174,26 @@
         </div>
 
         <script>
-            let links = document.getElementsByTagName('a');
-
-            for(let i = 0; i < links.length; i++) {
-                links[i].addEventListener('click', (e) => {
+            Array.from(document.querySelectorAll('a')).forEach((link) => {
+                link.addEventListener('click', (e) => {
                     woopra.track("outbound_link_clicked", { url: e.currentTarget.href });
                 });
-            }
+            });
+
+            Array.from(document.querySelectorAll('.js-tab')).forEach((tab) => {
+                tab.addEventListener('click', (e) => {
+                    Array.from(document.querySelectorAll('.editor-tab.active')).forEach((el) => {
+                        el.classList.remove('active');
+                    });
+
+                    Array.from(document.querySelectorAll('.editor-tab-name.active')).forEach((el) => {
+                        el.classList.remove('active');
+                    });
+
+                    document.getElementById(e.currentTarget.dataset.tab).classList.add('active');
+                    e.currentTarget.classList.add('active');
+                });
+            });
 
             document.addEventListener('copy', () => {
                 let text = '';
