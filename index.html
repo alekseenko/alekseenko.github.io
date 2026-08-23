@@ -1,213 +1,109 @@
 <!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-        <meta http-equiv="X-UA-Compatible" content="ie=edge">
-        <meta property="og:title" content="Andy Alekseenko - Ruby on Rails developer">
-        <meta property="og:site_name" content="Andy Alekseenko">
-        <meta property="og:image" content="https://alekseenko.github.io/img/photo.jpg">
-        <title>Andy Alekseenko</title>
-        <!-- Start of Woopra Code -->
-        <script>
-            (function(){
-                var t,i,e,n=window,o=document,a=arguments,s="script",r=["config","track","identify","visit","push","call","trackForm","trackClick"],c=function(){var t,i=this;for(i._e=[],t=0;r.length>t;t++)(function(t){i[t]=function(){return i._e.push([t].concat(Array.prototype.slice.call(arguments,0))),i}})(r[t])};for(n._w=n._w||{},t=0;a.length>t;t++)n._w[a[t]]=n[a[t]]=n[a[t]]||new c;i=o.createElement(s),i.async=1,i.src="//static.woopra.com/js/w.js",e=o.getElementsByTagName(s)[0],e.parentNode.insertBefore(i,e)
-            })("woopra");
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Andy Aleksieienko — Ruby on Rails developer</title>
+    <meta name="description" content="Andy Aleksieienko — Ruby on Rails developer at Storylane. An irb session you can actually type into.">
+    <meta property="og:title" content="Andy Aleksieienko — Ruby on Rails developer">
+    <meta property="og:site_name" content="Andy Aleksieienko">
+    <meta property="og:description" content="An irb session you can actually type into. Start with andy.methods.">
+    <meta property="og:image" content="https://alekseenko.github.io/assets/img/photo.jpg">
+    <meta property="og:url" content="https://alekseenko.github.io">
+    <meta name="theme-color" content="#0E0F11">
+    <link rel="canonical" href="https://alekseenko.github.io">
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="assets/styles/console.css" rel="stylesheet">
+    <noscript>
+      <style>
+        /* Without JS the prompt is dead weight — show the plain profile instead. */
+        .profile-fallback { position: static; width: auto; height: auto; margin: 0; clip: auto; clip-path: none; overflow: visible; white-space: normal; line-height: 1.6; }
+        .profile-fallback h1 { font-size: 20px; font-weight: 500; margin: 0 0 12px; }
+        .profile-fallback ul { padding-left: 18px; }
+        .prompt, .hints { display: none; }
+      </style>
+    </noscript>
 
-            woopra.config({
-                domain: 'alekseenko.github.io'
-            });
-            woopra.track();
-        </script>
-        <!-- End of Woopra Code -->
-        <link rel='shortcut icon' type='image/x-icon' href='/favicon.ico' />
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono&display=swap" rel="stylesheet">
-        <link href="./styles/global.css" rel="stylesheet">
-    </head>
-    <body>
-        <div class="container">
-            <div class="window">
-                <div class="titlebar">
-                    <div class="dot close"></div>
-                    <div class="dot minimise"></div>
-                    <div class="dot maximise"></div>
-                </div>
-                <div class="window-content">
-                    <div class="editor-tab-header">
-                        <div class="editor-tab-name active js-tab" data-tab="first_tab">
-                            seeds.rb
-                        </div>
-                        <div class="editor-tab-name mobile-show js-tab" data-tab="second_tab">
-                            photo.jpg
-                        </div>
+    <!-- Woopra -->
+    <script>
+      (function () {
+        var t, i, e, n = window, o = document, a = arguments, s = "script",
+          r = ["config", "track", "identify", "visit", "push", "call", "trackForm", "trackClick"],
+          c = function () { var t, i = this; for (i._e = [], t = 0; r.length > t; t++)(function (t) { i[t] = function () { return i._e.push([t].concat(Array.prototype.slice.call(arguments, 0))), i } })(r[t]) };
+        for (n._w = n._w || {}, t = 0; a.length > t; t++) n._w[a[t]] = n[a[t]] = n[a[t]] || new c;
+        i = o.createElement(s), i.async = 1, i.src = "//static.woopra.com/js/w.js", e = o.getElementsByTagName(s)[0], e.parentNode.insertBefore(i, e)
+      })("woopra");
 
-                        <div class="editor-separate-tabs mobile-hide">
-                            <div class="editor-tab-name active">
-                                photo.jpg
-                            </div>
-                        </div>
-                    </div>
-                    <div class="editor-tabs">
-                        <div id="first_tab" class="editor-tab editor-first-tab active">
-                            <div class="editor-tab-content">
-                                <div class="editor-lines">
-                                    <div class="rb-line">1</div>
-                                    <div class="rb-line">2</div>
-                                    <div class="rb-line">3</div>
-                                    <div class="rb-line">4</div>
-                                    <div class="rb-line">5</div>
-                                    <div class="rb-line">6</div>
-                                    <div class="rb-line">7</div>
-                                    <div class="rb-line">8</div>
-                                    <div class="rb-line">9</div>
-                                    <div class="rb-line">10</div>
-                                    <div class="rb-line">11</div>
-                                    <div class="rb-line">12</div>
-                                    <div class="rb-line">13</div>
-                                    <div class="rb-line">14</div>
-                                    <div class="rb-line">15</div>
-                                    <div class="rb-line">16</div>
-                                    <div class="rb-line">17</div>
-                                    <div class="rb-line">18</div>
-                                    <div class="rb-line">19</div>
-                                    <div class="rb-line">20</div>
-                                </div>
-                                <div class="editor-code">
-                                    <div class="rb-line">
-                                        <span class="rb-variable">profile</span> <span class="rb-operator">=</span> <span class="rb-class">Profile</span>.create!(
-                                    </div>
-                                    <div class="rb-line rb-nested">
-                                        <span class="rb-symbol">name</span>:&nbsp;<span class="rb-string">'Andy Alekseenko'</span>,
-                                    </div>
-                                    <div class="rb-line rb-nested">
-                                        <span class="rb-symbol">position</span>:&nbsp;<span class="rb-string">'Ruby on Rails developer at <a href="https://storylane.io" target="_blank">Storylane</a>'</span>,
-                                    </div>
-                                    <div class="rb-line rb-nested">
-                                        <span class="rb-symbol">employed</span>:&nbsp;<span class="rb-bool">true</span>,
-                                    </div>
-                                    <div class="rb-line rb-nested">
-                                        <span class="rb-symbol">email</span>:&nbsp;<span class="rb-string">'<a href="mailto:mailto.alekseenko@gmail.com" target="_blank">mailto.alekseenko@gmail.com</a>'</span>,
-                                    </div>
-                                    <div class="rb-line rb-nested">
-                                        <span class="rb-symbol">about</span>:&nbsp;<span class="rb-string">'Strong web developer with great communication and teamwork skills'</span>
-                                    </div>
-                                    <div class="rb-line">)</div>
+      woopra.config({ domain: 'alekseenko.github.io' });
+      woopra.track();
+    </script>
+  </head>
 
-                                    <div class="rb-line">
-                                        <span class="rb-variable">profile</span>.socials.create!(
-                                    </div>
-                                    <div class="rb-line rb-nested">
-                                        <span class="rb-symbol">kind</span>:&nbsp;<span class="rb-symbol">:github</span>,
-                                    </div>
-                                    <div class="rb-line rb-nested">
-                                        <span class="rb-symbol">url</span>:&nbsp;<span class="rb-string">'<a href="https://github.com/alekseenko" target="_blank">https://github.com/alekseenko</a>'</span>
-                                    </div>
-                                    <div class="rb-line">)</div>
-
-                                    <div class="rb-line">
-                                        <span class="rb-variable">profile</span>.socials.create!(
-                                    </div>
-                                    <div class="rb-line rb-nested">
-                                        <span class="rb-symbol">kind</span>:&nbsp;<span class="rb-symbol">:linkedin</span>,
-                                    </div>
-                                    <div class="rb-line rb-nested">
-                                        <span class="rb-symbol">url</span>:&nbsp;<span class="rb-string">'<a href="https://www.linkedin.com/in/alekseenkoandy" target="_blank">https://www.linkedin.com/in/alekseenkoandy</a>'</span>
-                                    </div>
-                                    <div class="rb-line">)</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div id="second_tab" class="editor-tab editor-second-tab">
-                            <div class="editor-tab-content">
-                                <img src="img/deal-with-it.png" class="deal-with-it easter-egg" alt="deal with it" />
-                                <img src="img/photo.jpg" alt="photo" class="photo" />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+  <body>
+    <div class="console" data-root>
+      <header class="titlebar">
+        <div class="titlebar__id">
+          <span class="titlebar__dot" aria-hidden="true"></span>
+          <span class="titlebar__label">alekseenko.github.io<span class="titlebar__irb"> — irb (Ruby 3.4)</span></span>
         </div>
+        <button type="button" class="titlebar__theme" data-theme-toggle>Light</button>
+      </header>
 
-        <div class="easter-egg till-you-dead">
-            <img class="dance" alt="dance" width="212" height="270" src="./img/dance.gif" />
-            <img class="till" alt="till" width="212" height="270" src="./img/dance.gif" />
-            <img class="you" alt="you" width="212" height="270" src="./img/dance.gif" />
-            <img class="dead" alt="dead" width="212" height="270" src="./img/dance.gif" />
+      <main class="transcript" data-transcript>
+        <div class="transcript__body">
+          <!-- Readable without JavaScript, and to crawlers that never type. -->
+          <div class="profile-fallback">
+            <h1>Andy Aleksieienko</h1>
+            <p>Ruby on Rails developer at <a href="https://storylane.io">Storylane</a></p>
+            <p>Strong web developer with great communication and teamwork skills</p>
+            <ul>
+              <li><a href="mailto:mailto.alekseenko@gmail.com">mailto.alekseenko@gmail.com</a></li>
+              <li><a href="https://github.com/alekseenko">github.com/alekseenko</a></li>
+              <li><a href="https://www.linkedin.com/in/alekseenkoandy">linkedin.com/in/alekseenkoandy</a></li>
+            </ul>
+            <noscript><p>This site is an interactive irb console. Enable JavaScript for the full session.</p></noscript>
+          </div>
 
-            <script id="easter-egg-script" async type="text/javascript">
-                const magicSequence = [68, 65, 78, 67, 69];
-                let index = 0;
+          <div data-lines role="log" aria-live="polite" aria-label="irb transcript"></div>
 
-                const onKeydown = ({ keyCode }) => {
-                    if (keyCode !== magicSequence[index]) {
-                        index = 0;
-                        return;
-                    }
-
-                    if (index + 1 === magicSequence.length) {
-                        woopra.track("easter_egg_found");
-
-                        let song = new Audio('./misc/dance.mp3');
-                        song.volume = 0.5;
-                        song.loop = true;
-                        song.play();
-
-                        document.body.classList.add('dance');
-                        document.body.removeEventListener('keydown', onKeydown);
-                        document.body.querySelector('#easter-egg-script').remove();
-
-                        let hue = 0;
-                        setInterval(() => {
-                            document.body.style.backgroundColor = `hsl(${hue}, 47%, 77%)`;
-                            hue = hue === 360 ? 0 : hue + 1;
-                        }, 1)
-                    }
-
-                    index++;
-                };
-
-                document.body.addEventListener('keydown', onKeydown);
-                console.log("Press the magical letters sequence on your keyboard to witness some DANCE 🕺");
-            </script>
+          <div class="prompt">
+            <span class="prompt__label" data-prompt>irb(main):003:0&gt;</span>
+            <span class="prompt__field">
+              <span class="prompt__typed" data-typed></span>
+              <span class="prompt__caret is-blinking" data-caret> </span>
+              <span class="prompt__ghost" data-ghost></span>
+            </span>
+            <input
+              class="prompt__input"
+              data-input
+              type="text"
+              aria-label="Ruby console input"
+              spellcheck="false"
+              autocomplete="off"
+              autocapitalize="off"
+              autocorrect="off"
+              enterkeyhint="go">
+          </div>
         </div>
+      </main>
 
-        <script>
-            Array.from(document.querySelectorAll('a')).forEach((link) => {
-                link.addEventListener('click', (e) => {
-                    woopra.track("outbound_link_clicked", { url: e.currentTarget.href });
-                });
-            });
+      <footer class="hints">
+        <span class="hints__desktop">try <span class="hints__accent">andy.methods</span></span>
+        <span class="hints__desktop">↑ ↓ history</span>
+        <span class="hints__desktop">tab / → completes</span>
 
-            Array.from(document.querySelectorAll('.js-tab')).forEach((tab) => {
-                tab.addEventListener('click', (e) => {
-                    Array.from(document.querySelectorAll('.editor-tab.active')).forEach((el) => {
-                        el.classList.remove('active');
-                    });
+        <button type="button" class="chip" data-command="andy.methods">andy.methods</button>
+        <button type="button" class="chip" data-command="andy.about">andy.about</button>
+        <button type="button" class="chip" data-command="andy.socials">andy.socials</button>
+        <button type="button" class="chip" data-command="andy.stack">andy.stack</button>
+        <button type="button" class="chip" data-command="andy.photo">andy.photo</button>
+        <button type="button" class="chip" data-command="andy.dance!">andy.dance!</button>
+      </footer>
+    </div>
 
-                    Array.from(document.querySelectorAll('.editor-tab-name.active')).forEach((el) => {
-                        el.classList.remove('active');
-                    });
-
-                    document.getElementById(e.currentTarget.dataset.tab).classList.add('active');
-                    e.currentTarget.classList.add('active');
-                });
-            });
-
-            document.addEventListener('copy', () => {
-                let text = '';
-
-                if (window.getSelection) {
-                    text = window.getSelection().toString();
-                } else if (document.selection && document.selection.type !== 'Control') {
-                    text = document.selection.createRange().text;
-                }
-
-                if (text.length) {
-                    woopra.track("text_copied", { text: text });
-                }
-            });
-        </script>
-    </body>
+    <script type="module" src="assets/scripts/main.js"></script>
+  </body>
 </html>
