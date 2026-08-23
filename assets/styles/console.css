@@ -433,6 +433,17 @@ a:hover { text-decoration-thickness: 2px; }
   text-align: center;
 }
 
+/* ------------------------------------------------------------- confetti -- */
+
+/* Above the page, below every overlay, and deaf to the mouse — it celebrates
+   without ever getting between the reader and the prompt. */
+.confetti {
+  position: fixed;
+  inset: 0;
+  z-index: 98;
+  pointer-events: none;
+}
+
 /* --------------------------------------------------------------- matrix -- */
 
 .matrix {

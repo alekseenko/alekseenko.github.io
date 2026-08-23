@@ -7,9 +7,14 @@ import { BOOT_TRANSCRIPT, BOOT_HISTORY, FIRST_STATEMENT, COMPLETIONS } from './c
 
 const promptFor = (n) => `irb(main):${String(n).padStart(3, '0')}:0>`;
 
+// The command table is a plain object, so `table[input]` alone would match
+// `constructor` and every other Object.prototype member — silently running a
+// JavaScript builtin instead of reporting an unknown method.
+const has = (object, key) => Object.prototype.hasOwnProperty.call(object, key);
+
 export function createConsole({
   root, transcript, lines, input, promptLabel, typed, caret, ghost,
-  createCommands, onRun, onModeChange
+  createCommands, onModeChange
 }) {
   const state = {
     n: FIRST_STATEMENT,
@@ -26,12 +31,20 @@ export function createConsole({
 
   const labelFor = () => (state.mode ? `${state.mode.label}>` : promptFor(state.n));
 
-  // Within 40px of the end counts as "following along". Anyone who scrolled up
-  // to re-read something is left where they are while an animation redraws.
-  const pinned = () =>
-    transcript.scrollHeight - transcript.scrollTop - transcript.clientHeight < 40;
+  // Whether a redrawing line may keep the view at the bottom. It is a latch, not
+  // a distance test: a tolerance band would re-pin on every small scroll step,
+  // so scrolling up slowly could never escape it — each notch would be undone by
+  // the next frame. Scrolling up at all lets go; returning to the bottom takes
+  // hold again.
+  let following = true;
 
+  transcript.addEventListener('scroll', () => {
+    following = transcript.scrollHeight - transcript.scrollTop - transcript.clientHeight <= 2;
+  });
+
+  // Submitting always returns to the bottom, whatever the reader was looking at.
   function scrollToBottom() {
+    following = true;
     transcript.scrollTop = transcript.scrollHeight;
     // Web fonts and the ASCII portrait settle a frame late and change the height.
     requestAnimationFrame(() => {
@@ -43,11 +56,21 @@ export function createConsole({
     const node = document.createElement('div');
     node.className = 'line';
     if (line.kind) node.classList.add(`line--${line.kind}`);
-    if (line.art) node.classList.add('line--art');
+    if (line.art) {
+      node.classList.add('line--art');
+      // The transcript is an aria-live log; announcing three thousand punctuation
+      // marks helps nobody. The `#<Portrait …>` line beneath is the description.
+      node.setAttribute('aria-hidden', 'true');
+    }
 
     // Wordle scoring: one span per letter, coloured by how well it matched.
+    // Colour is the whole message, so the row carries it in words as well.
     if (line.tiles) {
       node.classList.add('line--tiles');
+      node.setAttribute('role', 'img');
+      node.setAttribute('aria-label', line.tiles
+        .map((tile) => `${tile.ch} ${{ hit: 'correct', near: 'wrong place', miss: 'not in word' }[tile.state]}`)
+        .join(', '));
       for (const tile of line.tiles) {
         const span = document.createElement('span');
         span.className = `tile tile--${tile.state}`;
@@ -89,15 +112,18 @@ export function createConsole({
   function live({ kind = 'art', persistent = false } = {}) {
     const node = document.createElement('div');
     node.className = `line line--${kind}`;
+    // A line that redraws itself 24 times a second inside an aria-live region
+    // would be read aloud 24 times a second. The return value below it says
+    // everything a screen reader needs.
+    node.setAttribute('aria-hidden', 'true');
     lines.appendChild(node);
     scrollToBottom();
 
     const handle = {
       onEnd: null,
       update(text) {
-        const follow = pinned();
         node.textContent = text;
-        if (follow) transcript.scrollTop = transcript.scrollHeight;
+        if (following) transcript.scrollTop = transcript.scrollHeight;
       },
       end() {
         if (!running.has(handle)) return;
@@ -117,6 +143,9 @@ export function createConsole({
   }
 
   function enterMode(spec) {
+    // Never stack modes: whatever was holding the prompt gets its onExit run, so
+    // a game cannot leave a timer or a listener behind when another takes over.
+    if (state.mode) exitMode();
     state.mode = spec;
     state.value = '';
     state.draft = '';
@@ -143,7 +172,7 @@ export function createConsole({
   function normalize(raw) {
     let value = raw.trim().replace(/\s+/g, ' ').toLowerCase().replace(/^profile\./, 'andy.');
     value = value.replace(/\(\)$/, '');
-    if (value && !value.startsWith('andy') && !['help', 'exit'].includes(value) && table[`andy.${value}`]) {
+    if (value && !value.startsWith('andy') && !['help', 'exit'].includes(value) && has(table, `andy.${value}`)) {
       value = `andy.${value}`;
     }
     return value;
@@ -200,8 +229,8 @@ export function createConsole({
   // the console's own Ruby error. Matchers are ordered and may decline by
   // returning null, which is how the evaluator hands unparseable input back.
   function dispatch(raw) {
-    const exact = table[normalize(raw)];
-    if (exact) return exact() || [];
+    const key = normalize(raw);
+    if (has(table, key)) return table[key]() || [];
 
     for (const matcher of matchers) {
       const hit = matcher.pattern.exec(raw.trim());
@@ -250,7 +279,6 @@ export function createConsole({
     print(out || errorFor(raw));
     renderPrompt();
     scrollToBottom();
-    if (onRun) onRun(raw, out !== null);
   }
 
   function focus() {

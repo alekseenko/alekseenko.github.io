@@ -12,6 +12,7 @@
 import { NAME, POSITION, ABOUT, EMAIL, STACK, LINKS, METHODS, TIMEZONE, formatTime } from './profile.js';
 
 const RUBY_VERSION = '3.4.1';
+const MAX_STRING = 10000;
 const RAILS_VERSION = '7.2.2';
 
 /* ------------------------------------------------------------------ values -- */
@@ -31,6 +32,11 @@ const mod = (value) => ({ type: 'Module', value });
 const profile = { type: 'Profile' };
 
 const isNum = (v) => v.type === 'Integer' || v.type === 'Float';
+
+// Method tables are plain objects, so a bare `obj[name]` would happily answer
+// `constructor`, `valueOf` and friends off Object.prototype — returning
+// JavaScript internals where a NoMethodError belongs.
+const has = (object, key) => Object.prototype.hasOwnProperty.call(object, key);
 
 class RubyError extends Error {
   constructor(name, message, options = {}) {
@@ -326,6 +332,11 @@ function binary(op, a, b) {
   }
 
   if (a.type === 'String' && op === '*' && b.type === 'Integer') {
+    // Real Ruby would try and eventually die of it. A browser tab that freezes
+    // is a worse outcome than a slightly early error.
+    if (a.value.length * b.value > MAX_STRING) {
+      throw new RubyError('RangeError', `result too long (max ${MAX_STRING} characters here)`);
+    }
     return str(a.value.repeat(Math.max(0, b.value)));
   }
 
@@ -371,7 +382,7 @@ function callMethod(receiver, name, args) {
     /* ------------------------------------------------------------ Profile -- */
     case 'Profile': {
       const fields = profileFields();
-      if (fields[name]) return fields[name]();
+      if (has(fields, name)) return fields[name]();
       if (name === 'respond_to?') {
         const asked = one && (one.type === 'Symbol' || one.type === 'String') ? one.value : '';
         return bool(METHODS.includes(asked) || Object.keys(fields).includes(asked));

@@ -2,6 +2,8 @@
 // is a word typed at a prompt, which is exactly what this console already is —
 // so it needs no key capture and plays identically on a phone.
 
+import { confetti } from '../toys/confetti.js';
+
 const WORDS = [
   'BLOCK', 'YIELD', 'ARRAY', 'RANGE', 'CLASS', 'MIXIN', 'SUPER', 'FIBER',
   'SCOPE', 'CACHE', 'ROUTE', 'MODEL', 'TABLE', 'INDEX', 'MERGE', 'SPLAT',
@@ -12,7 +14,6 @@ const WORDS = [
 ].filter((word) => word.length === 5);
 
 const ROUNDS = 6;
-const EMOJI = { hit: '🟩', near: '🟨', miss: '⬜' };
 
 // Standard Wordle scoring, duplicate letters included: exact matches claim their
 // letter first, so a second 'S' only goes yellow if the answer has one to spare.
@@ -43,7 +44,6 @@ const tileLine = (guess, states) => ({
 
 export function wordle({ enterMode, print }) {
   const answer = WORDS[Math.floor(Math.random() * WORDS.length)];
-  const played = [];
   let round = 0;
   let solved = false;
 
@@ -66,18 +66,15 @@ export function wordle({ enterMode, print }) {
 
       round += 1;
       const states = score(guess, answer);
-      played.push(states);
       solved = states.every((state) => state === 'hit');
       mode.label = `wordle(${Math.min(round + 1, ROUNDS)}/${ROUNDS})`;
 
       const out = [tileLine(guess, states)];
 
       if (solved) {
-        out.push({ text: '' });
-        out.push({ text: `Ruby Wordle ${round}/${ROUNDS}`, kind: 'dim' });
-        for (const row of played) out.push({ text: row.map((state) => EMOJI[state]).join('') });
-        out.push({ text: '' });
-        out.push({ text: `=> :solved`, kind: 'accent' });
+        // No recap grid: every guess is still on screen a few lines up.
+        confetti();
+        out.push({ text: '=> :solved', kind: 'accent' });
         return { lines: out, exit: true };
       }
 

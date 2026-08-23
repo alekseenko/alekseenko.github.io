@@ -1,6 +1,5 @@
 import { createConsole } from './console.js';
 import { buildCommands } from './commands/index.js';
-import { track } from './analytics.js';
 
 const $ = (selector) => document.querySelector(selector);
 
@@ -39,7 +38,6 @@ const session = createConsole({
   caret: $('[data-caret]'),
   ghost: $('[data-ghost]'),
   createCommands: buildCommands,
-  onRun: (command, known) => track('command_run', { command, known }),
   onModeChange: (mode) => renderChips(mode)
 });
 
@@ -59,14 +57,19 @@ function bindDefaultChips() {
 }
 
 function renderChips(mode) {
-  if (!mode || !mode.chips) {
+  if (!mode) {
     chipsHost.innerHTML = DEFAULT_CHIPS;
     bindDefaultChips();
     return;
   }
 
+  // A game that names no controls still gets a way out. Leaving the command
+  // chips up would be worse than useless — tapping `andy.methods` mid-wordle
+  // submits it as a twelve-letter guess.
+  const chips = mode.chips || [{ label: 'quit', key: 'Escape' }];
+
   chipsHost.innerHTML = '';
-  for (const { label, key } of mode.chips) {
+  for (const { label, key } of chips) {
     const button = document.createElement('button');
     button.type = 'button';
     button.className = 'chip chip--mode';
@@ -81,15 +84,5 @@ function renderChips(mode) {
 }
 
 bindDefaultChips();
-
-document.addEventListener('click', (event) => {
-  const link = event.target.closest('a[href]');
-  if (link) track('outbound_link_clicked', { url: link.href });
-});
-
-document.addEventListener('copy', () => {
-  const text = String(window.getSelection() || '');
-  if (text.length) track('text_copied', { text });
-});
 
 session.focus();

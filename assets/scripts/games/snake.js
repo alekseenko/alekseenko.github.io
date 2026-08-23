@@ -7,6 +7,7 @@ const ROWS = 13;
 const START_MS = 150;
 const FLOOR_MS = 70;
 const STEP_MS = 4; // shaved off the tick per gem eaten
+const BUFFER = 2;  // turns that can be queued between ticks
 
 const CHARS = { body: '█', head: '█', food: '♦', empty: ' ' };
 const KEYS = {
@@ -23,7 +24,11 @@ const key = (x, y) => `${x},${y}`;
 export function snake({ enterMode, exitMode, live }) {
   let body = [{ x: 8, y: 6 }, { x: 7, y: 6 }, { x: 6, y: 6 }];
   let heading = [1, 0];
-  let queued = null;
+  // A real input buffer, not a single slot. Pressing up then left before the
+  // next tick has to mean "up, then left" — validating the second press against
+  // the first while the snake is still travelling right would let it turn 180°
+  // into its own neck.
+  const pending = [];
   let food = null;
   let score = 0;
   let alive = true;
@@ -55,10 +60,7 @@ export function snake({ enterMode, exitMode, live }) {
   }
 
   function step() {
-    if (queued) {
-      heading = queued;
-      queued = null;
-    }
+    if (pending.length) heading = pending.shift();
 
     const head = { x: body[0].x + heading[0], y: body[0].y + heading[1] };
     const hitWall = head.x < 0 || head.x >= COLS || head.y < 0 || head.y >= ROWS;
@@ -91,12 +93,19 @@ export function snake({ enterMode, exitMode, live }) {
   }
 
   function turn(name) {
+    if (!Object.prototype.hasOwnProperty.call(KEYS, name)) return false;
     const next = KEYS[name];
-    if (!next) return false;
-    const current = queued || heading;
-    // No reversing directly onto your own neck.
-    if (next[0] === -current[0] && next[1] === -current[1]) return true;
-    queued = next;
+    // Two moves ahead is as much as anyone plays; beyond that it stops feeling
+    // like steering and starts feeling like a recording.
+    if (pending.length >= BUFFER) return true;
+
+    // Each turn is judged against the direction that will actually precede it.
+    const prev = pending.length ? pending[pending.length - 1] : heading;
+    const reverses = next[0] === -prev[0] && next[1] === -prev[1];
+    const repeats = next[0] === prev[0] && next[1] === prev[1];
+    if (reverses || repeats) return true;
+
+    pending.push(next);
     return true;
   }
 

@@ -11,13 +11,9 @@ import { donut } from '../toys/donut.js';
 import { coffee } from '../toys/coffee.js';
 import { wordle } from '../games/wordle.js';
 import { snake } from '../games/snake.js';
-import { track } from '../analytics.js';
 
 export function buildCommands(api) {
-  const party = createParty({
-    onStart: () => track('easter_egg_found', { egg: 'dance' }),
-    onStop: () => api.focus()
-  });
+  const party = createParty({ onStop: () => api.focus() });
 
   const matrix = createMatrix({ onStop: () => api.focus() });
 
@@ -29,37 +25,32 @@ export function buildCommands(api) {
     }
   });
 
-  // Every undocumented command reports itself, so it is possible to tell which
-  // ones anyone actually finds.
-  const egg = (name, run) => () => {
-    track('easter_egg_found', { egg: name });
-    return run(api);
-  };
+  const toy = (run) => () => run(api);
 
   // The toys and games are top-level commands, the way `puts` is top-level:
   // they are things you can do here, not facts about a person. Only `destroy!`
   // hangs off `andy`, because destroying a record is exactly an instance method.
   const globals = {
-    'dance!': egg('dance', () => {
+    'dance!': toy(() => {
       party.start();
       return [{ text: '=> :dancing', kind: 'accent' }, { text: '' }];
     }),
-    'donut': egg('donut', donut),
-    'coffee': egg('coffee', coffee),
-    'matrix': egg('matrix', () => {
+    'donut': toy(donut),
+    'coffee': toy(coffee),
+    'matrix': toy(() => {
       matrix.start();
       return [{ text: '=> :wake_up', kind: 'accent' }, { text: '' }];
     }),
-    'wordle': egg('wordle', wordle),
-    'snake': egg('snake', snake)
+    'wordle': toy(wordle),
+    'snake': toy(snake)
   };
 
   const table = {
     ...profileCommands(),
     ...globals,
 
-    'andy.destroy!': egg('destroy', destroy),
-    'andy.destroy': egg('destroy', destroy)
+    'andy.destroy!': toy(destroy),
+    'andy.destroy': toy(destroy)
   };
 
   // Undocumented aliases, so a visitor who guesses `andy.donut` — or who

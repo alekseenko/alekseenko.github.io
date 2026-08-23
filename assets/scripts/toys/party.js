@@ -5,8 +5,22 @@ import { spawnDancers, frameFor, RAVE_COLORS } from './dancers.js';
 const DANCER_COUNT = 22;
 const LIGHT_COUNT = 6;
 const TICK_MS = 115; // dancers advance every 2-4 ticks, i.e. 230-460ms each
-const MUSIC_SRC = 'assets/audio/dance.mp3';
+// Opus first, MP3 for everyone else — the same track at two thirds the bytes
+// where it plays. Ordered best-first; the last entry is the guaranteed fallback.
+const MUSIC = [
+  { src: 'assets/audio/dance.webm', type: 'audio/webm; codecs=opus' },
+  { src: 'assets/audio/dance.mp3', type: 'audio/mpeg' }
+];
+// The track masters at -8.2 LUFS, which is very hot. Half volume lands it about
+// where streaming services would.
 const MUSIC_VOLUME = 0.5;
+
+function musicSource() {
+  const probe = document.createElement('audio');
+  // canPlayType returns "probably", "maybe" or "" — anything non-empty will do.
+  const supported = MUSIC.find((source) => probe.canPlayType(source.type));
+  return (supported || MUSIC[MUSIC.length - 1]).src;
+}
 
 const rand = (min, max) => min + Math.random() * (max - min);
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -76,7 +90,7 @@ export function createParty({ onStart, onStop } = {}) {
 
   function playMusic() {
     if (!music) {
-      music = new Audio(MUSIC_SRC);
+      music = new Audio(musicSource());
       music.loop = true;
       music.volume = MUSIC_VOLUME;
     }
