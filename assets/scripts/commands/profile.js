@@ -1,7 +1,7 @@
 // The single object the whole session revolves around. Every visible fact about
 // Andy is reachable as a method call on `andy`.
 
-import { PORTRAIT, PORTRAIT_COLS, PORTRAIT_ROWS } from './portrait.js';
+import { PORTRAIT, PORTRAIT_COLS, PORTRAIT_ROWS } from '../portrait.js';
 
 export const LINKS = {
   storylane: 'https://storylane.io',
@@ -16,8 +16,20 @@ export const ABOUT = 'Strong web developer with great communication and teamwork
 export const EMAIL = 'mailto.alekseenko@gmail.com';
 export const STACK = ['Ruby', 'Rails', 'PostgreSQL', 'Hotwire', 'Sidekiq', 'JavaScript'];
 
-const INSPECT = `=> #<Profile id: 1, name: "${NAME}", employed: true>`;
+// Where Andy actually is. Everything `andy.local_time` prints derives from this.
+export const TIMEZONE = 'Europe/Kyiv';
+
+export const INSPECT = `=> #<Profile id: 1, name: "${NAME}", employed: true>`;
 const blank = { text: '' };
+
+// The documented surface. Toys, games and `destroy!` are deliberately absent —
+// finding those is the point.
+export const METHODS = [
+  'name', 'position', 'about', 'email', 'socials', 'stack',
+  'photo', 'local_time', 'employed?', 'dance!'
+];
+
+export const HIDDEN_METHODS = ['donut', 'matrix', 'coffee', 'wordle', 'snake', 'destroy!'];
 
 // The transcript already on screen when the page boots, so a visitor who never
 // types anything still learns who this is. Statements 001 and 002 are spent here.
@@ -39,7 +51,8 @@ export const FIRST_STATEMENT = 3;
 
 // Commands offered by the autosuggestion, in match priority order. Deliberately
 // excludes the `andy = Profile.first` alias: it is recognised when typed, but
-// completing a bare `an` into an assignment is not what anyone wants.
+// completing a bare `an` into an assignment is not what anyone wants. Hidden
+// methods stay out too — a completion that spoils an easter egg is not a gift.
 export const COMPLETIONS = [
   'andy',
   'andy.name',
@@ -50,6 +63,7 @@ export const COMPLETIONS = [
   'andy.socials',
   'andy.stack',
   'andy.photo',
+  'andy.local_time',
   'andy.inspect',
   'andy.employed?',
   'andy.dance!',
@@ -57,14 +71,63 @@ export const COMPLETIONS = [
   'exit'
 ];
 
-// Keys are normalized input (see normalize()); values produce transcript lines.
-// `dance` is the odd one out — it has a side effect, handed in by the console.
-export function buildCommands({ startParty }) {
+// Ruby's Time#inspect, near enough: "2026-08-23 18:42:07 +0300".
+function timeParts(zone) {
+  const options = {
+    hour12: false,
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', second: '2-digit',
+    timeZoneName: 'longOffset'
+  };
+  if (zone) options.timeZone = zone;
+
+  const found = {};
+  for (const part of new Intl.DateTimeFormat('en-CA', options).formatToParts(new Date())) {
+    found[part.type] = part.value;
+  }
+  // "GMT+03:00" -> "+0300"; bare "GMT" means UTC.
+  const raw = (found.timeZoneName || 'GMT').replace('GMT', '').replace(':', '');
+  found.offset = raw || '+0000';
+  // Intl renders midnight as 24 in some locales.
+  if (found.hour === '24') found.hour = '00';
+  return found;
+}
+
+function offsetMinutes(offset) {
+  const sign = offset.startsWith('-') ? -1 : 1;
+  return sign * (Number(offset.slice(1, 3)) * 60 + Number(offset.slice(3, 5)));
+}
+
+export function formatTime(zone) {
+  const t = timeParts(zone);
+  return { text: `${t.year}-${t.month}-${t.day} ${t.hour}:${t.minute}:${t.second} ${t.offset}`, offset: t.offset };
+}
+
+function localTimeLines() {
+  const mine = formatTime(TIMEZONE);
+  const yours = formatTime(null);
+  const delta = (offsetMinutes(mine.offset) - offsetMinutes(yours.offset)) / 60;
+
+  const out = [{ text: `=> ${mine.text} (${TIMEZONE})` }];
+  if (delta) {
+    const hours = Math.abs(delta) === 1 ? '1 hour' : `${Math.abs(delta)} hours`;
+    out.push({ text: `   # ${hours} ${delta > 0 ? 'ahead of' : 'behind'} you`, kind: 'dim' });
+  }
+  out.push(blank);
+  return out;
+}
+
+export function profileCommands({ startParty }) {
   return {
     'andy': () => [{ text: INSPECT }, blank],
     'andy = profile.first': () => [{ text: INSPECT }, blank],
     'andy.methods': () => [
-      { text: '=> [:name, :position, :about, :email, :socials, :stack, :photo, :employed?, :dance!]', kind: 'accent' },
+      { text: `=> [${METHODS.map((m) => `:${m}`).join(', ')}]`, kind: 'accent' },
+      blank
+    ],
+    'andy.methods(all: true)': () => [
+      { text: `=> [${METHODS.concat(HIDDEN_METHODS).map((m) => `:${m}`).join(', ')}]`, kind: 'accent' },
+      { text: '   # there you go. the last six are undocumented for a reason.', kind: 'dim' },
       blank
     ],
     'andy.name': () => [{ text: `=> "${NAME}"` }, blank],
@@ -78,6 +141,7 @@ export function buildCommands({ startParty }) {
     ],
     'andy.stack': () => [{ text: `=> [${STACK.map((s) => `"${s}"`).join(', ')}]` }, blank],
     'andy.employed?': () => [{ text: '=> true', kind: 'accent' }, blank],
+    'andy.local_time': localTimeLines,
     'andy.photo': () => [
       { text: PORTRAIT, art: true },
       { text: `=> #<Portrait ${PORTRAIT_COLS}x${PORTRAIT_ROWS} chars>`, kind: 'dim' },
@@ -95,6 +159,9 @@ export function buildCommands({ startParty }) {
     'help': () => [
       { text: 'this is irb, not bash. every answer is a method call:', kind: 'dim' },
       { text: '  andy.methods', kind: 'accent' },
+      { text: 'expressions work too — try 2 + 2, or andy.stack.sample.', kind: 'dim' },
+      { text: 'some methods are undocumented. poke around, or ask nicely:', kind: 'dim' },
+      { text: '  andy.methods(all: true)', kind: 'accent' },
       blank
     ],
     'exit': () => [{ text: "you can't exit. this is the whole website.", kind: 'dim' }, blank]
