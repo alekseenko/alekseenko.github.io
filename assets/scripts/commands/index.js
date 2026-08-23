@@ -36,22 +36,35 @@ export function buildCommands(api) {
     return run(api);
   };
 
-  const table = {
-    ...profileCommands({ startParty: () => party.start() }),
-
-    'andy.donut': egg('donut', donut),
-    'andy.coffee': egg('coffee', coffee),
-    'andy.matrix': egg('matrix', () => {
+  // The toys and games are top-level commands, the way `puts` is top-level:
+  // they are things you can do here, not facts about a person. Only `destroy!`
+  // hangs off `andy`, because destroying a record is exactly an instance method.
+  const globals = {
+    'dance!': egg('dance', () => {
+      party.start();
+      return [{ text: '=> :dancing', kind: 'accent' }, { text: '' }];
+    }),
+    'donut': egg('donut', donut),
+    'coffee': egg('coffee', coffee),
+    'matrix': egg('matrix', () => {
       matrix.start();
       return [{ text: '=> :wake_up', kind: 'accent' }, { text: '' }];
     }),
+    'wordle': egg('wordle', wordle),
+    'snake': egg('snake', snake)
+  };
 
-    'andy.wordle': egg('wordle', wordle),
-    'andy.snake': egg('snake', snake),
+  const table = {
+    ...profileCommands(),
+    ...globals,
 
     'andy.destroy!': egg('destroy', destroy),
     'andy.destroy': egg('destroy', destroy)
   };
+
+  // Undocumented aliases, so a visitor who guesses `andy.donut` — or who
+  // remembers `andy.dance!` from the old site — is not told they are wrong.
+  for (const [name, run] of Object.entries(globals)) table[`andy.${name}`] = run;
 
   return { table, matchers: rubyMatchers() };
 }

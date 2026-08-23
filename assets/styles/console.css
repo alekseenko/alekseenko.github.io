@@ -42,6 +42,7 @@ html, body {
 }
 
 body {
+  overflow: hidden;
   background: var(--bg);
   color: var(--text);
   font-family: var(--mono);
@@ -79,8 +80,11 @@ a:hover { text-decoration-thickness: 2px; }
 /* --------------------------------------------------------------- layout -- */
 
 .console {
-  min-height: 100vh;
-  min-height: 100dvh;
+  /* Pinned to the viewport, not merely at least as tall as it: the transcript
+     between the title bar and the hint bar has to be the thing that scrolls,
+     otherwise the whole document scrolls and the prompt walks off the bottom. */
+  height: 100vh;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
   cursor: text;
@@ -176,15 +180,15 @@ a:hover { text-decoration-thickness: 2px; }
   width: fit-content;
 }
 
-/* Toys share the portrait's dark ground — they are art, not output — but at a
-   size you can actually watch rather than squint at. */
+/* The toys are printed output, not framed art: unlike the portrait they are
+   plain characters that read correctly either way up, so they take the page's
+   own colours in both themes. Only the metrics change — tighter leading, so a
+   donut looks round rather than stretched. */
 .line--toy {
   white-space: pre;
   font-size: 12px;
   line-height: 1.1;
-  color: #D6DCE3;
-  background: #0E0F11;
-  padding: 14px 16px;
+  padding: 10px 0;
   width: fit-content;
 }
 

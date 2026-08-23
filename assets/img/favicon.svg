@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- A brilliant-cut ruby: crown, girdle, pavilion. Three tones do the shading
+       so it stays legible at 16px, where strokes would smear into mud. -->
+  <g shape-rendering="geometricPrecision">
+    <polygon points="10,4 13,12 4,12" fill="#E24A55"/>
+    <polygon points="10,4 22,4 19,12 13,12" fill="#F4757D"/>
+    <polygon points="22,4 28,12 19,12" fill="#E24A55"/>
+    <polygon points="4,12 13,12 16,28" fill="#AE2D37"/>
+    <polygon points="13,12 19,12 16,28" fill="#E24A55"/>
+    <polygon points="19,12 28,12 16,28" fill="#AE2D37"/>
+  </g>
+</svg>

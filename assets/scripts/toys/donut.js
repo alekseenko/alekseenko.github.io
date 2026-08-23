@@ -42,32 +42,29 @@ function frame(a, b, cols, rows) {
   return rowsOut.join('\n');
 }
 
-export function donut({ live, print }) {
+// Only one donut turns at a time. Earlier ones freeze where they are, which
+// keeps them as printed output and keeps the trigonometry bill to one budget.
+let spinning = null;
+
+export function donut({ live }) {
   // Narrow enough to fit a phone without wrapping; the art box scrolls if not.
   const cols = window.innerWidth < 520 ? 44 : 62;
   const rows = Math.round(cols / 2.6) + 2;
 
-  const handle = live({ kind: 'toy' });
+  const handle = live({ kind: 'toy', persistent: true });
   let a = 1;
   let b = 1;
 
   handle.update(frame(a, b, cols, rows));
 
-  if (reducedMotion.matches) {
-    handle.onEnd = () => print([{ text: '=> :spinning', kind: 'accent' }, { text: '' }]);
-    return [{ text: '# esc to stop', kind: 'dim' }, { text: '' }];
+  if (!reducedMotion.matches) {
+    clearInterval(spinning);
+    spinning = setInterval(() => {
+      a += 0.07;
+      b += 0.03;
+      handle.update(frame(a, b, cols, rows));
+    }, 1000 / FPS);
   }
 
-  const timer = setInterval(() => {
-    a += 0.07;
-    b += 0.03;
-    handle.update(frame(a, b, cols, rows));
-  }, 1000 / FPS);
-
-  handle.onEnd = () => {
-    clearInterval(timer);
-    print([{ text: '=> :spinning', kind: 'accent' }, { text: '' }]);
-  };
-
-  return [{ text: '# esc to stop', kind: 'dim' }, { text: '' }];
+  return [{ text: '=> :spinning', kind: 'accent' }, { text: '' }];
 }

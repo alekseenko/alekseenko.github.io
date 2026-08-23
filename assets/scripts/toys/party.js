@@ -1,4 +1,4 @@
-// The dance party easter egg: `andy.dance!` and nothing else starts it.
+// The dance party easter egg: the top-level `dance!` and nothing else starts it.
 
 import { spawnDancers, frameFor, RAVE_COLORS } from './dancers.js';
 

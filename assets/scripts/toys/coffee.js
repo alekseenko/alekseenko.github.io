@@ -1,13 +1,13 @@
 // A ten-second charm, deliberately not a centrepiece.
 
 const MUG = [
-  '     ________',
-  '    /        \\____',
-  '   |          |   \\',
-  '   |          |    |',
-  '   |          |___/',
-  '    \\________/',
-  '  __________________',
+  '     ______',
+  '    /      \\___',
+  '    |      |   \\',
+  '    |      |   |',
+  '    |      |__/',
+  '    \\______/',
+  '   ____________'
 ];
 
 // Steam rises by cycling four hand-drawn plumes above the mug.
@@ -18,35 +18,26 @@ const STEAM = [
   ['       )(   ', '      (  )  ', '       )(   ']
 ];
 
-const DURATION_MS = 8000;
 const TICK_MS = 340;
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
 const render = (phase) => STEAM[phase % STEAM.length].concat(MUG).join('\n');
 
-export function coffee({ live, print }) {
-  const handle = live({ kind: 'toy' });
+// One cup steams at a time; the rest cool down where they were poured.
+let steaming = null;
+
+export function coffee({ live }) {
+  const handle = live({ kind: 'toy', persistent: true });
   let phase = 0;
   handle.update(render(phase));
 
-  let beat = null;
-  let stop = null;
+  if (!reducedMotion.matches) {
+    clearInterval(steaming);
+    steaming = setInterval(() => {
+      phase += 1;
+      handle.update(render(phase));
+    }, TICK_MS);
+  }
 
-  handle.onEnd = () => {
-    clearInterval(beat);
-    clearTimeout(stop);
-    print([{ text: '=> :caffeinated', kind: 'accent' }, { text: '' }]);
-  };
-
-  if (reducedMotion.matches) return [];
-
-  beat = setInterval(() => {
-    phase += 1;
-    handle.update(render(phase));
-  }, TICK_MS);
-
-  // Steam that never stops is a leak, not a joke.
-  stop = setTimeout(() => handle.end(), DURATION_MS);
-
-  return [];
+  return [{ text: '=> :caffeinated', kind: 'accent' }, { text: '' }];
 }

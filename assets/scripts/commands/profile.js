@@ -22,14 +22,16 @@ export const TIMEZONE = 'Europe/Kyiv';
 export const INSPECT = `=> #<Profile id: 1, name: "${NAME}", employed: true>`;
 const blank = { text: '' };
 
-// The documented surface. Toys, games and `destroy!` are deliberately absent —
-// finding those is the point.
+// What `andy` actually responds to. The toys live in the global namespace
+// instead — they are not facts about a person. `destroy!` goes last, where the
+// dangerous method belongs.
 export const METHODS = [
   'name', 'position', 'about', 'email', 'socials', 'stack',
-  'photo', 'local_time', 'employed?', 'dance!'
+  'photo', 'local_time', 'employed?', 'destroy!'
 ];
 
-export const HIDDEN_METHODS = ['donut', 'matrix', 'coffee', 'wordle', 'snake', 'destroy!'];
+// Top-level commands, the way `puts` is top-level.
+export const GLOBALS = ['dance!', 'donut', 'coffee', 'matrix', 'wordle', 'snake'];
 
 // The transcript already on screen when the page boots, so a visitor who never
 // types anything still learns who this is. Statements 001 and 002 are spent here.
@@ -51,8 +53,9 @@ export const FIRST_STATEMENT = 3;
 
 // Commands offered by the autosuggestion, in match priority order. Deliberately
 // excludes the `andy = Profile.first` alias: it is recognised when typed, but
-// completing a bare `an` into an assignment is not what anyone wants. Hidden
-// methods stay out too — a completion that spoils an easter egg is not a gift.
+// completing a bare `an` into an assignment is not what anyone wants.
+// `andy.destroy!` sits last on purpose — findable, never the first thing Tab
+// hands you.
 export const COMPLETIONS = [
   'andy',
   'andy.name',
@@ -66,9 +69,15 @@ export const COMPLETIONS = [
   'andy.local_time',
   'andy.inspect',
   'andy.employed?',
-  'andy.dance!',
+  'coffee',
+  'dance!',
+  'donut',
+  'matrix',
+  'snake',
+  'wordle',
   'help',
-  'exit'
+  'exit',
+  'andy.destroy!'
 ];
 
 // Ruby's Time#inspect, near enough: "2026-08-23 18:42:07 +0300".
@@ -117,17 +126,12 @@ function localTimeLines() {
   return out;
 }
 
-export function profileCommands({ startParty }) {
+export function profileCommands() {
   return {
     'andy': () => [{ text: INSPECT }, blank],
     'andy = profile.first': () => [{ text: INSPECT }, blank],
     'andy.methods': () => [
       { text: `=> [${METHODS.map((m) => `:${m}`).join(', ')}]`, kind: 'accent' },
-      blank
-    ],
-    'andy.methods(all: true)': () => [
-      { text: `=> [${METHODS.concat(HIDDEN_METHODS).map((m) => `:${m}`).join(', ')}]`, kind: 'accent' },
-      { text: '   # there you go. the last six are undocumented for a reason.', kind: 'dim' },
       blank
     ],
     'andy.name': () => [{ text: `=> "${NAME}"` }, blank],
@@ -147,10 +151,6 @@ export function profileCommands({ startParty }) {
       { text: `=> #<Portrait ${PORTRAIT_COLS}x${PORTRAIT_ROWS} chars>`, kind: 'dim' },
       blank
     ],
-    'andy.dance!': () => {
-      startParty();
-      return [{ text: '=> :dancing', kind: 'accent' }, blank];
-    },
     'andy.inspect': () => [
       { text: `=> #<Profile id: 1, name: "${NAME}", employed: true,` },
       { text: `     position: "${POSITION}">`, link: 'Storylane', href: LINKS.storylane },
@@ -160,8 +160,8 @@ export function profileCommands({ startParty }) {
       { text: 'this is irb, not bash. every answer is a method call:', kind: 'dim' },
       { text: '  andy.methods', kind: 'accent' },
       { text: 'expressions work too — try 2 + 2, or andy.stack.sample.', kind: 'dim' },
-      { text: 'some methods are undocumented. poke around, or ask nicely:', kind: 'dim' },
-      { text: '  andy.methods(all: true)', kind: 'accent' },
+      { text: 'and a few things live at the top level:', kind: 'dim' },
+      { text: `  ${GLOBALS.join('  ')}`, kind: 'accent' },
       blank
     ],
     'exit': () => [{ text: "you can't exit. this is the whole website.", kind: 'dim' }, blank]

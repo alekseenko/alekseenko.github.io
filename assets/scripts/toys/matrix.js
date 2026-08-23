@@ -3,7 +3,9 @@
 
 const GLYPHS = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789{}[]|=>@$&*';
 const FONT_SIZE = 15;
-const TRAIL = 0.075; // how fast the previous frame fades to black
+const TRAIL = 0.055;     // how fast the previous frame fades to black
+const SLOWEST = 10;      // frames a column waits before dropping one row
+const FASTEST = 3;
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
 const pick = () => GLYPHS[Math.floor(Math.random() * GLYPHS.length)];
@@ -50,11 +52,16 @@ export function createMatrix({ onStart, onStop } = {}) {
       context.font = `700 ${FONT_SIZE}px 'JetBrains Mono', monospace`;
       context.textBaseline = 'top';
 
-      // Each column falls at its own speed, starting somewhere above the fold so
-      // the screen fills unevenly rather than as one descending wall.
+      // Columns fall one whole character at a time, on their own cadence. Moving
+      // by fractions of a cell every frame instead would smear each glyph into
+      // the next and lose the katakana entirely.
+      const rows = Math.ceil(height / FONT_SIZE);
       columns = new Array(Math.ceil(width / FONT_SIZE)).fill(0).map(() => ({
-        y: Math.random() * -height,
-        speed: FONT_SIZE * (0.5 + Math.random() * 0.9)
+        // Seeded across the whole screen, so the rain is already falling when
+        // the overlay appears rather than arriving as one descending wall.
+        row: Math.floor(Math.random() * rows * 1.5) - Math.floor(rows * 0.5),
+        every: FASTEST + Math.floor(Math.random() * (SLOWEST - FASTEST)),
+        wait: 0
       }));
 
       context.fillStyle = '#000000';
@@ -62,19 +69,27 @@ export function createMatrix({ onStart, onStop } = {}) {
     }
 
     function draw() {
+      // Everything already on screen dims a little; that fade *is* the trail.
       context.fillStyle = `rgba(0, 0, 0, ${TRAIL})`;
       context.fillRect(0, 0, width, height);
 
-      columns.forEach((column, index) => {
-        const x = index * FONT_SIZE;
-        context.fillStyle = '#B8FFD0';
-        context.fillText(pick(), x, column.y);
-        // One glyph of afterglow behind the bright head sells the trail.
-        context.fillStyle = 'rgba(59, 224, 122, 0.85)';
-        context.fillText(pick(), x, column.y - FONT_SIZE);
+      const rows = Math.ceil(height / FONT_SIZE);
 
-        column.y += column.speed;
-        if (column.y > height + Math.random() * height * 0.5) column.y = -FONT_SIZE;
+      columns.forEach((column, index) => {
+        column.wait += 1;
+        if (column.wait < column.every) return;
+        column.wait = 0;
+
+        const x = index * FONT_SIZE;
+        // The glyph the head just vacated cools to plain green.
+        context.fillStyle = 'rgba(59, 224, 122, 0.9)';
+        context.fillText(pick(), x, column.row * FONT_SIZE);
+
+        column.row += 1;
+        context.fillStyle = '#CFFFE0';
+        context.fillText(pick(), x, column.row * FONT_SIZE);
+
+        if (column.row > rows + Math.random() * rows * 0.6) column.row = -1;
       });
 
       raf = requestAnimationFrame(draw);
@@ -86,10 +101,10 @@ export function createMatrix({ onStart, onStop } = {}) {
 
     if (reducedMotion.matches) {
       // A single still frame: recognisably the same image, none of the motion.
-      for (let pass = 0; pass < 26; pass++) {
+      for (let pass = 0; pass < 24; pass++) {
         columns.forEach((column, index) => {
-          context.fillStyle = pass > 22 ? '#B8FFD0' : `rgba(59, 224, 122, ${0.18 + pass * 0.03})`;
-          context.fillText(pick(), index * FONT_SIZE, column.y + pass * FONT_SIZE);
+          context.fillStyle = pass === 23 ? '#CFFFE0' : `rgba(59, 224, 122, ${0.16 + pass * 0.032})`;
+          context.fillText(pick(), index * FONT_SIZE, (column.row + pass - 23) * FONT_SIZE);
         });
       }
     } else {

@@ -84,7 +84,9 @@ export function createConsole({
 
   // One line a command owns and repaints: the donut, the coffee steam, the
   // snake board. Returns a handle rather than a node so callers cannot leak DOM.
-  function live({ kind = 'art' } = {}) {
+  // A persistent line is left out of `running`, so neither Escape nor the next
+  // command stops it — that is how a printed toy keeps going while you type.
+  function live({ kind = 'art', persistent = false } = {}) {
     const node = document.createElement('div');
     node.className = `line line--${kind}`;
     lines.appendChild(node);
@@ -104,7 +106,7 @@ export function createConsole({
       }
     };
 
-    running.add(handle);
+    if (!persistent) running.add(handle);
     return handle;
   }
 
