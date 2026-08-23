@@ -49,6 +49,22 @@ a {
 
 a:hover { text-decoration-thickness: 2px; }
 
+/* The browser default washes out dim and accent text alike, and the transcript
+   is meant to be copied. Reverse video is both what a terminal does and the
+   highest-contrast option available (~14:1 in either theme). */
+::selection {
+  background: var(--text);
+  color: var(--bg);
+}
+
+/* The portrait keeps its own colours in both themes, and reverse video would
+   turn the face into a negative — so it highlights on a lifted dark ground
+   instead, staying light-on-dark the way the art is tuned for. */
+.line--art::selection {
+  background: #3A3F47;
+  color: #FFFFFF;
+}
+
 /* --------------------------------------------------------------- layout -- */
 
 .console {
