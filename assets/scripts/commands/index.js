@@ -11,6 +11,7 @@ import { donut } from '../toys/donut.js';
 import { coffee } from '../toys/coffee.js';
 import { wordle } from '../games/wordle.js';
 import { snake } from '../games/snake.js';
+import { claude } from '../games/claude.js';
 
 export function buildCommands(api) {
   const party = createParty({ onStop: () => api.focus() });
@@ -42,7 +43,8 @@ export function buildCommands(api) {
       return [{ text: '=> :wake_up', kind: 'accent' }, { text: '' }];
     }),
     'wordle': toy(wordle),
-    'snake': toy(snake)
+    'snake': toy(snake),
+    'claude': toy(claude)
   };
 
   const table = {

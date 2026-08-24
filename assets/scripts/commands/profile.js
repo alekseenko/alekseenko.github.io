@@ -30,7 +30,7 @@ export const METHODS = [
 ];
 
 // Top-level commands, the way `puts` is top-level.
-export const GLOBALS = ['dance!', 'donut', 'coffee', 'matrix', 'wordle', 'snake'];
+export const GLOBALS = ['dance!', 'donut', 'coffee', 'matrix', 'wordle', 'snake', 'claude'];
 
 // The transcript already on screen when the page boots, so a visitor who never
 // types anything still learns who this is. Statements 001 and 002 are spent here.
@@ -67,6 +67,7 @@ export const COMPLETIONS = [
   'andy.local_time',
   'andy.inspect',
   'andy.employed?',
+  'claude',
   'coffee',
   'dance!',
   'donut',
