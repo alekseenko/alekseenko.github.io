@@ -39,6 +39,11 @@
 html, body {
   margin: 0;
   height: 100%;
+  /* Without this, dragging past the top or bottom of the transcript on iOS/
+     Android rubber-bands the whole page — the fixed titlebar and hint bar
+     slide out of place for a frame. The transcript itself may still bounce
+     (see .transcript below); it just stops there instead of leaking out. */
+  overscroll-behavior-y: none;
 }
 
 body {
@@ -147,6 +152,7 @@ a:hover { text-decoration-thickness: 2px; }
   flex: 1;
   overflow-y: auto;
   overflow-x: auto;
+  overscroll-behavior: contain;
   padding: var(--gutter) var(--gutter) 10px;
   line-height: 1.75;
 }
@@ -333,6 +339,20 @@ a:hover { text-decoration-thickness: 2px; }
 
   /* The Ruby version is a nicety; the hostname is the part worth the width. */
   .titlebar__irb { display: none; }
+
+  /* On a phone, `pre` text and a narrow viewport mean every long line — the
+     boot transcript, andy.socials, an error's hint — forces a second,
+     horizontal scrollbar inside a screen that already scrolls vertically.
+     That two-axis scroll is what makes a transcript feel broken on mobile,
+     so prose lines wrap here instead. Art stays unwrapped: the donut, the
+     portrait and the snake board are drawn as an exact character grid and
+     are already sized (or scaled — see donut.js) to fit without it. */
+  .line:not(.line--art):not(.line--toy) {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  .transcript { overflow-x: hidden; }
 }
 
 /* --------------------------------------------------- no-script fallback -- */
