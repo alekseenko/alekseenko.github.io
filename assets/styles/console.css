@@ -436,10 +436,13 @@ a:hover { text-decoration-thickness: 2px; }
 /* ------------------------------------------------------------- confetti -- */
 
 /* Above the page, below every overlay, and deaf to the mouse — it celebrates
-   without ever getting between the reader and the prompt. */
+   without ever getting between the reader and the prompt. Sized and positioned
+   entirely from JS (via visualViewport where available) rather than `inset: 0`,
+   so its CSS box always matches the coordinate space the particles are drawn
+   in — including on a phone with the keyboard up, where the layout viewport
+   `inset: 0` would target and the visible screen are two different rectangles. */
 .confetti {
   position: fixed;
-  inset: 0;
   z-index: 98;
   pointer-events: none;
 }

@@ -39,6 +39,20 @@ function spawn(width, height) {
   });
 }
 
+// window.innerWidth/innerHeight report the *layout* viewport, which on iOS
+// Safari does not shrink when the on-screen keyboard opens — only the visual
+// viewport does. Wordle keeps its input focused right up to the winning
+// guess, so sizing off innerHeight put the cannons at 98% of a height that
+// included the area now covered by the keyboard: below the part of the
+// screen anyone could actually see. visualViewport is the space that is
+// really on screen; fall back to the layout viewport where it's unsupported.
+function viewport() {
+  const vv = window.visualViewport;
+  return vv
+    ? { width: vv.width, height: vv.height, left: vv.offsetLeft, top: vv.offsetTop }
+    : { width: window.innerWidth, height: window.innerHeight, left: 0, top: 0 };
+}
+
 export function confetti() {
   // Celebration is still motion. Somebody who asked for less does not want a
   // screenful of it thrown at them for guessing a word.
@@ -48,6 +62,12 @@ export function confetti() {
   // two canvases on top of each other.
   const previous = document.querySelector('.confetti');
   if (previous) previous.remove();
+
+  // A focused input is a keyboard still on screen, stealing exactly the
+  // bottom third of the view the cannons fire into. Blurring starts it
+  // closing; the visualViewport listener below picks up the resize once the
+  // dismiss animation actually finishes and grows the canvas to match.
+  if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
 
   const canvas = document.createElement('canvas');
   canvas.className = 'confetti';
@@ -62,21 +82,31 @@ export function confetti() {
 
   function resize() {
     const ratio = Math.min(window.devicePixelRatio || 1, 2);
-    width = window.innerWidth;
-    height = window.innerHeight;
+    const view = viewport();
+    width = view.width;
+    height = view.height;
+    // The CSS box tracks the same rectangle the particles are drawn in, so a
+    // canvas backing store sized to the (possibly smaller) visual viewport is
+    // never stretched to fill a larger, stale layout-viewport box.
+    canvas.style.left = `${view.left}px`;
+    canvas.style.top = `${view.top}px`;
+    canvas.style.width = `${width}px`;
+    canvas.style.height = `${height}px`;
     canvas.width = width * ratio;
     canvas.height = height * ratio;
     context.setTransform(ratio, 0, 0, ratio, 0, 0);
   }
 
+  const resizeTarget = window.visualViewport || window;
+
   function cleanup() {
     cancelAnimationFrame(raf);
-    window.removeEventListener('resize', resize);
+    resizeTarget.removeEventListener('resize', resize);
     canvas.remove();
   }
 
   resize();
-  window.addEventListener('resize', resize);
+  resizeTarget.addEventListener('resize', resize);
   pieces = spawn(width, height);
 
   const started = performance.now();
