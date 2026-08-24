@@ -474,16 +474,21 @@ a:hover { text-decoration-thickness: 2px; }
 
 .crt__screen { transform-origin: 50% 50%; }
 
+/* A single kaomoji, not an ASCII-art block, so it wants a font stack that
+   actually carries the flipped table (ノ), the angry eyes (ಠ) and CJK-adjacent
+   glyphs cleanly at a huge size — the monospace face used everywhere else on
+   the site drops several of those to tofu boxes. */
 .crt__face {
   margin: 0;
-  font-family: var(--mono);
+  font-family: 'Noto Sans', 'Noto Sans Kannada', 'Hiragino Sans', 'Yu Gothic',
+    system-ui, sans-serif;
   font-weight: 700;
-  font-size: 15px;
-  line-height: 1.05;
-  white-space: pre;
+  font-size: clamp(48px, 13vw, 160px);
+  line-height: 1;
+  white-space: nowrap;
   color: #E24A55;
   text-shadow: 0 0 26px rgba(226, 74, 85, 0.5);
-  animation: fury 0.72s ease-in-out infinite;
+  animation: fury 0.32s steps(2, end) infinite;
 }
 
 .crt__screen.is-collapsing { animation: crtSquash 0.36s cubic-bezier(.6, 0, .9, .4) forwards; }
@@ -546,10 +551,18 @@ a:hover { text-decoration-thickness: 2px; }
   50% { opacity: var(--peak, 0.3); }
 }
 
+/* Furious trembling, not a gentle sway: fast, jagged (steps() rather than
+   eased), and rotating slightly off-axis so it reads as rage rather than a
+   loading spinner. */
 @keyframes fury {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-2px); }
-  75% { transform: translateX(2px); }
+  0%   { transform: translate(0, 0) rotate(0deg); }
+  15%  { transform: translate(-7px, 3px) rotate(-3deg); }
+  30%  { transform: translate(6px, -4px) rotate(3deg); }
+  45%  { transform: translate(-5px, -2px) rotate(-2deg); }
+  60%  { transform: translate(7px, 3px) rotate(2deg); }
+  75%  { transform: translate(-4px, 2px) rotate(-1deg); }
+  90%  { transform: translate(3px, -2px) rotate(1deg); }
+  100% { transform: translate(0, 0) rotate(0deg); }
 }
 
 @keyframes crtSquash {

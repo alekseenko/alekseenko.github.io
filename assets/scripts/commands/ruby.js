@@ -9,7 +9,7 @@
 // multi-line input. Anything it cannot parse is handed back to the console so
 // the existing NameError/NoMethodError output still has the last word.
 
-import { NAME, POSITION, ABOUT, EMAIL, STACK, LINKS, METHODS, TIMEZONE, formatTime } from './profile.js';
+import { NAME, POSITION, ABOUT, EMAIL, LINKS, METHODS, TIMEZONE, formatTime } from './profile.js';
 
 const RUBY_VERSION = '3.4.1';
 const MAX_STRING = 10000;
@@ -354,7 +354,6 @@ const profileFields = () => ({
   position: () => str(POSITION),
   about: () => str(ABOUT),
   email: () => str(EMAIL),
-  stack: () => arr(STACK.map(str)),
   socials: () => hash([['github', str(LINKS.github.replace('https://', ''))],
     ['linkedin', str(LINKS.linkedin.replace('https://www.', ''))]]),
   methods: () => arr(METHODS.map(sym)),

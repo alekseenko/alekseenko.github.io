@@ -8,7 +8,7 @@ Personal site of Andy Aleksieienko — a live `irb` session you can type into.
 
 The page boots with a short pre-run transcript, then hands you a prompt. There is
 one object in the session, `andy`, and every fact about him is a method call on
-it — `andy.name`, `andy.position`, `andy.stack`, `andy.photo`. Start with:
+it — `andy.name`, `andy.position`, `andy.socials`, `andy.photo`. Start with:
 
 ```ruby
 andy.methods
@@ -21,7 +21,6 @@ chaining, `puts`, and a handful of constants:
 ```ruby
 2 + 2                        # => 4
 10 / 3                       # => 3
-andy.stack.sample            # => "Hotwire"
 andy.name.upcase.reverse     # => "OKNEIEISKELA YDNA"
 andy.methods.grep(/time/)    # => [:local_time]
 RUBY_VERSION                 # => "3.4.1"

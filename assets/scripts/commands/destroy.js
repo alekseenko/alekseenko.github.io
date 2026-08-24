@@ -5,19 +5,7 @@
 // terminal equivalent is better anyway: the screen powers off like a CRT and
 // stays off until the page is reloaded.
 
-const FACE = [
-  ' ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄ ',
-  '█                        █',
-  '█  ▀█▄▄            ▄▄█▀  █',
-  '█     ▀▀██      ██▀▀     █',
-  '█      ████    ████      █',
-  '█                        █',
-  '█        ▄▄▄▄▄▄▄▄        █',
-  '█     ▄█▀        ▀█▄     █',
-  '█   █▀              ▀█   █',
-  '█                        █',
-  ' ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀ '
-].join('\n');
+const FACE = '(ノಠ益ಠ)ノ';
 
 const GLARE_MS = 2000;   // how long the face gets to be furious
 const SQUASH_MS = 360;   // picture collapses to a horizontal line

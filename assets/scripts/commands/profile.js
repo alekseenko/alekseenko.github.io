@@ -14,7 +14,6 @@ export const NAME = 'Andy Aleksieienko';
 export const POSITION = 'Ruby on Rails developer at Storylane';
 export const ABOUT = 'Strong web developer with great communication and teamwork skills';
 export const EMAIL = 'mailto.alekseenko@gmail.com';
-export const STACK = ['Ruby', 'Rails', 'PostgreSQL', 'Hotwire', 'Sidekiq', 'JavaScript'];
 
 // Where Andy actually is. Everything `andy.local_time` prints derives from this.
 export const TIMEZONE = 'Europe/Kyiv';
@@ -26,7 +25,7 @@ const blank = { text: '' };
 // instead — they are not facts about a person. `destroy!` goes last, where the
 // dangerous method belongs.
 export const METHODS = [
-  'name', 'position', 'about', 'email', 'socials', 'stack',
+  'name', 'position', 'about', 'email', 'socials',
   'photo', 'local_time', 'employed?', 'destroy!'
 ];
 
@@ -64,7 +63,6 @@ export const COMPLETIONS = [
   'andy.methods',
   'andy.position',
   'andy.socials',
-  'andy.stack',
   'andy.photo',
   'andy.local_time',
   'andy.inspect',
@@ -143,7 +141,6 @@ export function profileCommands() {
       { text: '     linkedin: "linkedin.com/in/alekseenkoandy" }', link: 'linkedin.com/in/alekseenkoandy', href: LINKS.linkedin },
       blank
     ],
-    'andy.stack': () => [{ text: `=> [${STACK.map((s) => `"${s}"`).join(', ')}]` }, blank],
     'andy.employed?': () => [{ text: '=> true', kind: 'accent' }, blank],
     'andy.local_time': localTimeLines,
     'andy.photo': () => [
@@ -159,7 +156,7 @@ export function profileCommands() {
     'help': () => [
       { text: 'this is irb, not bash. every answer is a method call:', kind: 'dim' },
       { text: '  andy.methods', kind: 'accent' },
-      { text: 'expressions work too — try 2 + 2, or andy.stack.sample.', kind: 'dim' },
+      { text: 'expressions work too — try 2 + 2, or andy.socials.keys.', kind: 'dim' },
       { text: 'and a few things live at the top level:', kind: 'dim' },
       { text: `  ${GLOBALS.join('  ')}`, kind: 'accent' },
       blank

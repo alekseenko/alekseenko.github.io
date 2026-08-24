@@ -309,9 +309,19 @@ export function createConsole({
     } else if (event.key === 'Escape') {
       if (state.mode) exitMode();
       else stopRunning();
-    } else if ((event.key === 'Tab' || event.key === 'ArrowRight') && tail) {
-      // Only swallow Tab when there is something to accept, so it still moves
-      // focus out of the console for keyboard users.
+    } else if (event.key === 'Tab') {
+      // Always swallow Tab, whether or not there is a suggestion to accept.
+      // Letting it through with nothing to complete used to hand focus to the
+      // browser chrome (the URL bar) since nothing else on the page sits after
+      // the input in tab order — jarring for a console you are meant to keep
+      // typing into. Clicking anywhere on the page refocuses it anyway, so
+      // nothing reachable is lost by keeping Tab local to the prompt.
+      event.preventDefault();
+      if (tail) {
+        state.value += tail;
+        renderPrompt();
+      }
+    } else if (event.key === 'ArrowRight' && tail) {
       event.preventDefault();
       state.value += tail;
       renderPrompt();
