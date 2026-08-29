@@ -219,6 +219,13 @@ a:hover { text-decoration-thickness: 2px; }
 .tile--near { background: var(--tile-near); }
 .tile--miss { background: var(--tile-miss); }
 
+/* A line whose contents are themselves lines — a block that gets repainted
+   whole, like the permission menu, where only the highlighted row changes. */
+.line--group { white-space: normal; }
+
+.line--group .line--option { color: var(--dim); }
+.line--group .line--option-on { color: var(--accent); }
+
 /* --------------------------------------------------------------- prompt -- */
 
 .prompt {
@@ -254,9 +261,17 @@ a:hover { text-decoration-thickness: 2px; }
   color: var(--bg);
 }
 
-/* Only blinks when it holds a bare space — a blinking block would flash the
-   suggested character in and out. */
+/* Blinks whenever it is a caret rather than a suggestion or a selection —
+   including mid-line, where it sits on top of a character. So the blink swaps
+   the reverse video off and on rather than fading the block out: the character
+   underneath has to stay readable through the dark half of the cycle. */
 .prompt__caret.is-blinking { animation: blink 1.1s step-end infinite; }
+
+/* The line to the right of the caret. */
+.prompt__after {
+  white-space: pre;
+  color: var(--text);
+}
 
 .prompt__ghost {
   white-space: pre;
@@ -549,8 +564,8 @@ a:hover { text-decoration-thickness: 2px; }
 /* ------------------------------------------------------------ keyframes -- */
 
 @keyframes blink {
-  0%, 49% { opacity: 1; }
-  50%, 100% { opacity: 0; }
+  0%, 49% { background: var(--accent); color: var(--bg); }
+  50%, 100% { background: transparent; color: var(--text); }
 }
 
 @keyframes popIn {

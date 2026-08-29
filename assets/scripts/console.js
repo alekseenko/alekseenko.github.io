@@ -13,12 +13,19 @@ const promptFor = (n) => `irb(main):${String(n).padStart(3, '0')}:0>`;
 const has = (object, key) => Object.prototype.hasOwnProperty.call(object, key);
 
 export function createConsole({
-  root, transcript, lines, input, promptLabel, typed, caret, ghost,
+  root, transcript, lines, input, promptLabel, typed, caret, after, ghost,
   createCommands, onModeChange
 }) {
+  // `pos` is the caret; `anchor` is the other end of a selection, equal to
+  // `pos` when there is none. Both mirror the hidden input rather than replace
+  // it — the input still does the actual editing, so word jumps, double-click
+  // selection and the platform's own emacs bindings keep working, and the
+  // painted line just follows wherever it left the caret.
   const state = {
     n: FIRST_STATEMENT,
     value: '',
+    pos: 0,
+    anchor: 0,
     draft: '',
     hist: BOOT_HISTORY.slice(),
     histIdx: -1,
@@ -109,13 +116,14 @@ export function createConsole({
   // snake board. Returns a handle rather than a node so callers cannot leak DOM.
   // A persistent line is left out of `running`, so neither Escape nor the next
   // command stops it — that is how a printed toy keeps going while you type.
-  function live({ kind = 'art', persistent = false } = {}) {
+  function live({ kind = 'art', persistent = false, announce = false } = {}) {
     const node = document.createElement('div');
     node.className = `line line--${kind}`;
     // A line that redraws itself 24 times a second inside an aria-live region
     // would be read aloud 24 times a second. The return value below it says
-    // everything a screen reader needs.
-    node.setAttribute('aria-hidden', 'true');
+    // everything a screen reader needs. A menu is the exception: it repaints
+    // once per keypress, and what it says is the whole point.
+    if (!announce) node.setAttribute('aria-hidden', 'true');
     lines.appendChild(node);
     scrollToBottom();
 
@@ -123,6 +131,13 @@ export function createConsole({
       onEnd: null,
       update(text) {
         node.textContent = text;
+        if (following) transcript.scrollTop = transcript.scrollHeight;
+      },
+      // Same line, repainted from line objects instead of a string — for a
+      // block that redraws but still needs colour, links or tiles inside it.
+      // The permission menu is one: only the highlighted row changes.
+      render(newLines) {
+        node.replaceChildren(...newLines.map(renderLine));
         if (following) transcript.scrollTop = transcript.scrollHeight;
       },
       end() {
@@ -147,7 +162,7 @@ export function createConsole({
     // a game cannot leave a timer or a listener behind when another takes over.
     if (state.mode) exitMode();
     state.mode = spec;
-    state.value = '';
+    setValue('');
     state.draft = '';
     state.histIdx = -1;
     renderPrompt();
@@ -159,7 +174,7 @@ export function createConsole({
     if (!state.mode) return;
     const mode = state.mode;
     state.mode = null;
-    state.value = '';
+    setValue('');
     if (mode.onExit) print(mode.onExit() || []);
     renderPrompt();
     if (onModeChange) onModeChange(null);
@@ -208,21 +223,58 @@ export function createConsole({
     ];
   }
 
+  // Nothing is suggested mid-line: a completion appended to text the caret is
+  // standing in front of would be a suggestion for a line nobody is typing.
   function ghostFor(value) {
     if (state.mode || !value.trim()) return '';
+    if (state.pos !== value.length || state.anchor !== state.pos) return '';
     const lower = value.toLowerCase();
     const hit = COMPLETIONS.find((command) => command.startsWith(lower) && command !== lower);
     return hit ? hit.slice(value.length) : '';
   }
 
+  // Set the line programmatically — history, completion, a kill. The caret goes
+  // where told (end of the line by default) and any selection collapses onto it.
+  function setValue(value, pos = value.length) {
+    state.value = value;
+    state.pos = Math.max(0, Math.min(pos, value.length));
+    state.anchor = state.pos;
+  }
+
   function renderPrompt() {
-    const tail = ghostFor(state.value);
+    const value = state.value;
+    const tail = ghostFor(value);
+    const from = Math.min(state.pos, state.anchor);
+    const to = Math.max(state.pos, state.anchor);
+
     promptLabel.textContent = labelFor();
-    typed.textContent = state.value;
-    caret.textContent = tail ? tail[0] : ' ';
-    caret.classList.toggle('is-blinking', !tail);
-    ghost.textContent = tail ? tail.slice(1) : '';
-    if (input.value !== state.value) input.value = state.value;
+
+    // The caret is a block sitting *on* a character, the way a terminal's is —
+    // and a selection is the same block widened, which is exactly how reverse
+    // video renders one. So both are the same element.
+    if (to > from) {
+      typed.textContent = value.slice(0, from);
+      caret.textContent = value.slice(from, to);
+      after.textContent = value.slice(to);
+      ghost.textContent = '';
+      caret.classList.remove('is-blinking');
+    } else {
+      typed.textContent = value.slice(0, from);
+      // At the end of the line the block holds the first character of the
+      // suggestion, or a space when there is nothing to suggest.
+      caret.textContent = from < value.length ? value[from] : (tail ? tail[0] : ' ');
+      after.textContent = from < value.length ? value.slice(from + 1) : '';
+      ghost.textContent = tail ? tail.slice(1) : '';
+      caret.classList.toggle('is-blinking', !tail);
+    }
+
+    // Assigning `value` drops the input's own selection, so the caret has to be
+    // restored after it — and only when it actually moved, or the assignment
+    // would fight the user's in-progress drag.
+    if (input.value !== value) input.value = value;
+    if (input.selectionStart !== from || input.selectionEnd !== to) {
+      input.setSelectionRange(from, to, state.pos < state.anchor ? 'backward' : 'forward');
+    }
   }
 
   // Resolution order: exact command, then the argument-taking matchers, then
@@ -248,12 +300,15 @@ export function createConsole({
     // Inside a game the prompt belongs to the game, not to Ruby.
     if (state.mode) {
       const mode = state.mode;
-      state.value = '';
+      setValue('');
       state.histIdx = -1;
       if (raw.trim()) state.hist.unshift(raw);
       const result = mode.onSubmit(raw) || [];
       const out = Array.isArray(result) ? result : (result.lines || []);
-      print([echo].concat(out));
+      // A menu answers Enter by repainting the choice it already shows, so
+      // echoing the empty line the reader submitted would only add a stray
+      // prompt above it.
+      print(mode.echo === false ? out : [echo].concat(out));
       if (!Array.isArray(result) && result.exit) exitMode();
       else renderPrompt();
       scrollToBottom();
@@ -261,7 +316,7 @@ export function createConsole({
     }
 
     state.n += 1;
-    state.value = '';
+    setValue('');
     state.draft = '';
     state.histIdx = -1;
 
@@ -281,6 +336,26 @@ export function createConsole({
     scrollToBottom();
   }
 
+  // Ctrl+C, as a terminal means it: abandon whatever is on the prompt — a
+  // half-typed line, a spinning toy, a game holding the session — and hand back
+  // a clean one. It never runs anything, and the `^C` stays in the transcript
+  // so the abandoned line is still part of the record.
+  function interrupt() {
+    const inMode = state.mode !== null;
+    print([{ text: `${labelFor()} ${state.value}^C`, kind: 'in' }]);
+    stopRunning();
+    if (inMode) {
+      exitMode();
+      return;
+    }
+    // irb re-prompts with the same statement number: nothing was evaluated.
+    setValue('');
+    state.draft = '';
+    state.histIdx = -1;
+    renderPrompt();
+    scrollToBottom();
+  }
+
   function focus() {
     // Without this guard every click steals focus and collapses the selection,
     // making the transcript impossible to copy.
@@ -290,8 +365,34 @@ export function createConsole({
   }
 
   input.addEventListener('input', () => {
-    state.value = input.value;
+    syncCaret();
     renderPrompt();
+  });
+
+  // Where the input left the caret. `selectionDirection` says which end the
+  // user is dragging, and that end is the caret — extending a selection
+  // leftwards has to paint the block growing leftwards too.
+  function syncCaret() {
+    // The value comes along for the ride. Every caller is about to paint from
+    // `state`, and painting a stale value would write it straight back into the
+    // input — silently undoing anything the input knows and this does not yet.
+    state.value = input.value;
+    const backward = input.selectionDirection === 'backward';
+    const start = input.selectionStart ?? state.value.length;
+    const end = input.selectionEnd ?? start;
+    state.pos = backward ? start : end;
+    state.anchor = backward ? end : start;
+  }
+
+  // Arrow keys, Home/End, word jumps, a click into the middle of the line, a
+  // drag across it: all of them are the input's job, and all of them surface
+  // here. Painting on `selectionchange` rather than on a list of keys is what
+  // keeps the block caret honest for keystrokes this file never enumerates.
+  document.addEventListener('selectionchange', () => {
+    if (document.activeElement !== input) return;
+    const before = `${state.pos}:${state.anchor}:${state.value}`;
+    syncCaret();
+    if (`${state.pos}:${state.anchor}:${state.value}` !== before) renderPrompt();
   });
 
   input.addEventListener('keydown', (event) => {
@@ -302,7 +403,60 @@ export function createConsole({
       return;
     }
 
+    // `selectionchange` is delivered a task late, so after an arrow key the
+    // cached caret can still be one keystroke behind when the next one arrives.
+    // Reading the input directly here is what makes a kill land where the
+    // caret actually is rather than where it was.
+    syncCaret();
     const tail = ghostFor(state.value);
+    const at = Math.min(state.pos, state.anchor);
+    const to = Math.max(state.pos, state.anchor);
+
+    // The readline bindings a terminal answers to. Ctrl and not Meta: on macOS
+    // Cmd+A/Cmd+C belong to the browser, and taking them would break selecting
+    // and copying the transcript.
+    if (event.ctrlKey && !event.metaKey && !event.altKey) {
+      const kill = event.key.toLowerCase();
+      if (kill === 'c') {
+        // On Windows and Linux this is also the copy shortcut, and a terminal
+        // resolves the clash the same way: with something selected it copies,
+        // and only an empty selection interrupts.
+        const selection = window.getSelection();
+        if (to > at || (selection && String(selection).length)) return;
+        event.preventDefault();
+        interrupt();
+        return;
+      }
+      if (kill === 'u') {
+        // Kill to the start of the line.
+        event.preventDefault();
+        setValue(state.value.slice(to), 0);
+        renderPrompt();
+        return;
+      }
+      if (kill === 'k') {
+        // Kill to the end of the line.
+        event.preventDefault();
+        setValue(state.value.slice(0, at), at);
+        renderPrompt();
+        return;
+      }
+      if (kill === 'w') {
+        // Kill the word behind the caret, and the whitespace before it.
+        event.preventDefault();
+        const head = state.value.slice(0, at).replace(/\s*\S*$/, '');
+        setValue(head + state.value.slice(to), head.length);
+        renderPrompt();
+        return;
+      }
+      if (kill === 'l') {
+        // Clear the screen, keeping the line you were typing — as `clear` does.
+        event.preventDefault();
+        lines.replaceChildren();
+        scrollToBottom();
+        return;
+      }
+    }
 
     if (event.key === 'Enter') {
       run(state.value);
@@ -318,12 +472,14 @@ export function createConsole({
       // nothing reachable is lost by keeping Tab local to the prompt.
       event.preventDefault();
       if (tail) {
-        state.value += tail;
+        setValue(state.value + tail);
         renderPrompt();
       }
     } else if (event.key === 'ArrowRight' && tail) {
+      // Only ever true at the end of the line, where there is no character to
+      // step onto — everywhere else the arrow moves the caret, as it should.
       event.preventDefault();
-      state.value += tail;
+      setValue(state.value + tail);
       renderPrompt();
     } else if (event.key === 'ArrowUp') {
       event.preventDefault();
@@ -331,23 +487,33 @@ export function createConsole({
       if (next < 0 || next === state.histIdx) return;
       if (state.histIdx === -1) state.draft = state.value;
       state.histIdx = next;
-      state.value = state.hist[next];
+      setValue(state.hist[next]);
       renderPrompt();
     } else if (event.key === 'ArrowDown') {
       event.preventDefault();
       if (state.histIdx <= -1) return;
       state.histIdx -= 1;
-      state.value = state.histIdx >= 0 ? state.hist[state.histIdx] : state.draft;
+      setValue(state.histIdx >= 0 ? state.hist[state.histIdx] : state.draft);
       renderPrompt();
     }
   });
 
-  // Escape works even when the hidden input has lost focus — after a chip tap,
-  // say — so a spinning toy is never stuck on screen.
+  // Escape and Ctrl+C work even when the hidden input has lost focus — after a
+  // chip tap, say — so a spinning toy is never stuck on screen.
   document.addEventListener('keydown', (event) => {
-    if (event.key !== 'Escape' || document.activeElement === input) return;
-    if (state.mode) exitMode();
-    else stopRunning();
+    if (document.activeElement === input) return;
+    if (event.key === 'Escape') {
+      if (state.mode) exitMode();
+      else stopRunning();
+      return;
+    }
+    // Not when something is selected: that is a copy on Linux and Windows.
+    if (event.ctrlKey && !event.metaKey && event.key.toLowerCase() === 'c') {
+      const selection = window.getSelection();
+      if (selection && String(selection).length) return;
+      event.preventDefault();
+      interrupt();
+    }
   });
 
   root.addEventListener('click', focus);
@@ -373,7 +539,7 @@ export function createConsole({
     submit(command) {
       // Chips are tapped, not typed — don't pop a touch keyboard for them.
       const wasFocused = document.activeElement === input;
-      state.value = command;
+      setValue(command);
       renderPrompt();
       run(command);
       if (wasFocused) focus();
@@ -383,6 +549,11 @@ export function createConsole({
       if (name === 'Escape') {
         if (state.mode) exitMode();
         else stopRunning();
+        return;
+      }
+      // A menu's confirm chip submits the line, exactly as Enter would.
+      if (name === 'Enter') {
+        run(state.value);
         return;
       }
       if (state.mode && state.mode.onKey) state.mode.onKey({ key: name, preventDefault() {} });

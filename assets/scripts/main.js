@@ -36,6 +36,7 @@ const session = createConsole({
   promptLabel: $('[data-prompt]'),
   typed: $('[data-typed]'),
   caret: $('[data-caret]'),
+  after: $('[data-after]'),
   ghost: $('[data-ghost]'),
   createCommands: buildCommands,
   onModeChange: (mode) => renderChips(mode)

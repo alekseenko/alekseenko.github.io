@@ -123,62 +123,131 @@ function verdictFor(score, total) {
   return "you'd have `rm -rf`'d something by now. let it explain itself first.";
 }
 
-const renderRound = (item, roundNum, total) => [
-  { text: '' },
-  { text: `Bash command [${roundNum}/${total}]`, kind: 'dim' },
-  { text: `  ${item.cmd}` },
-  { text: '' },
-  { text: 'allow this command to run? (y/n)', kind: 'dim' }
+// The real prompt's wording, down to the second option being an invitation to
+// argue with it. Choosing is the whole interaction, so it is a menu rather than
+// a y/n question: arrow to a line, press enter.
+const OPTIONS = [
+  { label: 'Yes, allow this command', value: 'allow' },
+  { label: 'No, and tell Claude what to do differently', value: 'deny' }
 ];
 
-export function claude({ enterMode }) {
+const ALIASES = {
+  y: 0, yes: 0, allow: 0, a: 0, 1: 0,
+  n: 1, no: 1, deny: 1, block: 1, d: 1, 2: 1
+};
+
+export function claude({ enterMode, print, live }) {
   const rounds = shuffled(POOL).slice(0, ROUNDS);
   let index = 0;
   let score = 0;
+  let cursor = 0;
+  let menu = null;
+
+  // `live` rather than `print` because the highlighted row moves: the menu is
+  // one block of the transcript that gets repainted, not a new block per
+  // keypress. Persistent, so Escape stopping the toys never blanks it.
+  function menuLines(active) {
+    return OPTIONS.map((option, i) => ({
+      text: `${active && i === cursor ? '❯' : ' '} ${i + 1}. ${option.label}`,
+      kind: active && i === cursor ? 'option-on' : 'option'
+    }));
+  }
+
+  function paint(active = true) {
+    if (menu) menu.render(menuLines(active));
+  }
+
+  function ask() {
+    cursor = 0;
+    const item = rounds[index];
+    print([
+      { text: '' },
+      { text: `Bash command [${index + 1}/${rounds.length}]`, kind: 'dim' },
+      { text: `  ${item.cmd}` },
+      { text: '' },
+      { text: 'Do you want to proceed?' }
+    ]);
+    menu = live({ kind: 'group', persistent: true, announce: true });
+    paint();
+  }
+
+  // Freeze the menu where it stands — the chosen row keeps its arrow, so the
+  // transcript still shows what was picked — then score it and set up the next
+  // round. Everything is printed here rather than returned, because the round
+  // that follows has to open its menu underneath this round's answer.
+  function answer(choice) {
+    cursor = choice;
+    paint();
+    menu = null;
+
+    const item = rounds[index];
+    const correctChoice = item.harmful ? 'deny' : 'allow';
+    const correct = OPTIONS[choice].value === correctChoice;
+    if (correct) score += 1;
+
+    print([
+      { text: '' },
+      {
+        text: correct ? '=> :correct' : `=> :wrong, should have been :${correctChoice}ed`,
+        kind: 'accent'
+      },
+      { text: `  ${item.explain}`, kind: 'dim' }
+    ]);
+
+    index += 1;
+
+    if (index >= rounds.length) {
+      print([
+        { text: '' },
+        { text: `final score: ${score}/${rounds.length}`, kind: 'accent' },
+        { text: verdictFor(score, rounds.length), kind: 'dim' }
+      ]);
+      if (score === rounds.length) confetti();
+      return { lines: [], exit: true };
+    }
+
+    mode.label = `claude(${index + 1}/${rounds.length})`;
+    ask();
+    return [];
+  }
 
   const mode = {
     label: `claude(1/${rounds.length})`,
+    // Enter is an answer to the menu, not a line of input — echoing the empty
+    // prompt above the result would be noise.
+    echo: false,
+    chips: [
+      { label: '↑', key: 'ArrowUp' },
+      { label: '↓', key: 'ArrowDown' },
+      { label: 'select', key: 'Enter' },
+      { label: 'quit', key: 'Escape' }
+    ],
+    onKey(event) {
+      if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') return false;
+      // Taken before the prompt sees them, so the arrows move the highlight
+      // instead of walking back through the command history.
+      cursor = (cursor + (event.key === 'ArrowUp' ? -1 : 1) + OPTIONS.length) % OPTIONS.length;
+      paint();
+      return true;
+    },
     onSubmit(raw) {
       const input = raw.trim().toLowerCase();
       if (input === 'exit' || input === 'quit') return { lines: [], exit: true };
-
-      const allow = ['y', 'yes', 'allow'].includes(input);
-      const deny = ['n', 'no', 'deny', 'block'].includes(input);
-      if (!allow && !deny) {
-        return [{ text: 'ArgumentError: type y or n (allow / deny also work)', kind: 'accent' }];
-      }
-
-      const item = rounds[index];
-      const correctChoice = item.harmful ? 'deny' : 'allow';
-      const correct = (allow ? 'allow' : 'deny') === correctChoice;
-      if (correct) score += 1;
-
-      const out = [
-        {
-          text: correct ? '=> :correct' : `=> :wrong, should have been :${correctChoice}ed`,
-          kind: 'accent'
-        },
-        { text: `  ${item.explain}`, kind: 'dim' }
-      ];
-
-      index += 1;
-
-      if (index >= rounds.length) {
-        out.push({ text: '' });
-        out.push({ text: `final score: ${score}/${rounds.length}`, kind: 'accent' });
-        out.push({ text: verdictFor(score, rounds.length), kind: 'dim' });
-        if (score === rounds.length) confetti();
-        return { lines: out, exit: true };
-      }
-
-      mode.label = `claude(${index + 1}/${rounds.length})`;
-      out.push(...renderRound(rounds[index], index + 1, rounds.length));
-      return out;
+      // Enter on the menu: whatever the arrow is pointing at.
+      if (!input) return answer(cursor);
+      // Typing the answer still works, for anyone who never stopped typing y.
+      if (Object.prototype.hasOwnProperty.call(ALIASES, input)) return answer(ALIASES[input]);
+      return [{ text: 'ArgumentError: use ↑ ↓ and enter, or type 1 / 2', kind: 'accent' }];
     },
     onExit() {
+      // A menu left mid-question goes flat: no arrow, nothing still awaiting
+      // an answer that will never come.
+      paint(false);
+      menu = null;
       if (index >= rounds.length) return [{ text: '' }];
-      if (index === 0) return [{ text: '=> :abandoned' }, { text: '' }];
+      if (index === 0) return [{ text: '' }, { text: '=> :abandoned' }, { text: '' }];
       return [
+        { text: '' },
         { text: `stopped at ${index}/${rounds.length} — score: ${score}/${index}`, kind: 'dim' },
         { text: '=> :abandoned' },
         { text: '' }
@@ -188,11 +257,16 @@ export function claude({ enterMode }) {
 
   enterMode(mode);
 
-  return [
+  // Printed rather than returned: the first menu is a live line, and a live
+  // line is appended the moment it is made — so everything above it has to be
+  // on screen already.
+  print([
     { text: `=> #<Claude rounds: ${rounds.length}, tool: :bash>` },
     { text: '   every prompt below is a real permission request. read it closely —', kind: 'dim' },
-    { text: '   some of these are uglified on purpose. y to allow, n to deny.', kind: 'dim' },
-    { text: '   type exit to give up.', kind: 'dim' },
-    ...renderRound(rounds[0], 1, rounds.length)
-  ];
+    { text: '   some of these are uglified on purpose.', kind: 'dim' },
+    { text: '   ↑ ↓ to choose, enter to confirm, ctrl+c to quit.', kind: 'dim' }
+  ]);
+  ask();
+
+  return [];
 }

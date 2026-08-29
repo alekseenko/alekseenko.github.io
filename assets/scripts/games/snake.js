@@ -163,7 +163,7 @@ export function snake({ enterMode, exitMode, live }) {
 
   return [
     { text: '=> #<Snake board: 26x13, food: :gems>' },
-    { text: '   arrows or wasd. esc to quit.', kind: 'dim' },
+    { text: '   arrows or wasd. ctrl+c to quit.', kind: 'dim' },
     { text: '' }
   ];
 }

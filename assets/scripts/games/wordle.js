@@ -98,7 +98,7 @@ export function wordle({ enterMode, print }) {
 
   return [
     { text: `=> #<Wordle rounds: ${ROUNDS}, dictionary: :ruby>` },
-    { text: '   five letters, from ruby and rails. type exit to give up.', kind: 'dim' },
+    { text: '   five letters, from ruby and rails. ctrl+c to give up.', kind: 'dim' },
     { text: '' }
   ];
 }
