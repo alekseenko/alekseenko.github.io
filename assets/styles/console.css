@@ -236,6 +236,21 @@ a:hover { text-decoration-thickness: 2px; }
   padding-top: 2px;
 }
 
+/* A menu-driven mode hides the command line: the label and the caret would only
+   suggest there is something to type. The row keeps a sliver of height and the
+   input keeps its box — a collapsed or `display: none` field cannot hold focus,
+   and focus is what keeps the keys arriving. */
+.prompt--silent {
+  height: 1px;
+  padding-top: 0;
+  overflow: hidden;
+}
+
+.prompt--silent .prompt__label,
+.prompt--silent .prompt__field {
+  visibility: hidden;
+}
+
 .prompt__label {
   flex: none;
   white-space: pre;
@@ -311,6 +326,9 @@ a:hover { text-decoration-thickness: 2px; }
 
 .hints__accent { color: var(--accent); }
 
+/* The standing hints describe the command line; a game has taken it away. */
+.hints--mode .hints__desktop { display: none; }
+
 /* Transparent to the hint bar's flex layout, so chips keep its gap and scroll. */
 .hints__chips { display: contents; }
 
@@ -330,11 +348,13 @@ a:hover { text-decoration-thickness: 2px; }
 }
 
 /* A game's own controls are worth showing on a desktop too — the arrows are the
-   clearest possible statement of what the keyboard now does. */
+   clearest possible statement of what the keyboard now does. They read as part
+   of the hint bar rather than a toolbar bolted onto it, so they are sized to the
+   hints beside them; the phone gets the bigger tap targets further down. */
 .chip--mode {
   display: block;
-  min-width: 48px;
-  font-size: 14px;
+  min-width: 26px;
+  padding: 4px 8px;
   text-align: center;
 }
 
@@ -351,6 +371,13 @@ a:hover { text-decoration-thickness: 2px; }
   .hints::-webkit-scrollbar { display: none; }
   .hints__desktop { display: none; }
   .chip { display: block; }
+
+  /* Thumbs, not a mouse pointer. */
+  .chip--mode {
+    min-width: 44px;
+    padding: 7px 10px;
+    font-size: 13px;
+  }
 
   /* The Ruby version is a nicety; the hostname is the part worth the width. */
   .titlebar__irb { display: none; }

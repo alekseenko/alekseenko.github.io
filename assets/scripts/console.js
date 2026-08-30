@@ -13,7 +13,7 @@ const promptFor = (n) => `irb(main):${String(n).padStart(3, '0')}:0>`;
 const has = (object, key) => Object.prototype.hasOwnProperty.call(object, key);
 
 export function createConsole({
-  root, transcript, lines, input, promptLabel, typed, caret, after, ghost,
+  root, transcript, lines, input, promptRow, promptLabel, typed, caret, after, ghost,
   createCommands, onModeChange
 }) {
   // `pos` is the caret; `anchor` is the other end of a selection, equal to
@@ -249,6 +249,12 @@ export function createConsole({
 
     promptLabel.textContent = labelFor();
 
+    // A mode that asks its question as a menu has no use for a command line:
+    // a caret blinking under the options only invites typing that goes nowhere.
+    // The row is collapsed rather than removed — the input inside it is still
+    // the thing receiving every keystroke, and `display: none` cannot be focused.
+    promptRow.classList.toggle('prompt--silent', Boolean(state.mode && state.mode.silent));
+
     // The caret is a block sitting *on* a character, the way a terminal's is —
     // and a selection is the same block widened, which is exactly how reverse
     // video renders one. So both are the same element.
@@ -342,7 +348,10 @@ export function createConsole({
   // so the abandoned line is still part of the record.
   function interrupt() {
     const inMode = state.mode !== null;
-    print([{ text: `${labelFor()} ${state.value}^C`, kind: 'in' }]);
+    // A silent mode has no visible prompt to interrupt, so the `^C` stands
+    // alone rather than introducing a line the reader never saw.
+    const line = state.mode && state.mode.silent ? '^C' : `${labelFor()} ${state.value}^C`;
+    print([{ text: line, kind: 'in' }]);
     stopRunning();
     if (inMode) {
       exitMode();

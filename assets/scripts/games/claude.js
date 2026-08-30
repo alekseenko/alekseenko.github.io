@@ -214,8 +214,10 @@ export function claude({ enterMode, print, live }) {
   const mode = {
     label: `claude(1/${rounds.length})`,
     // Enter is an answer to the menu, not a line of input — echoing the empty
-    // prompt above the result would be noise.
+    // prompt above the result would be noise. And the prompt line itself goes
+    // away: the question is answered by choosing a row, not by typing one.
     echo: false,
+    silent: true,
     chips: [
       { label: '↑', key: 'ArrowUp' },
       { label: '↓', key: 'ArrowDown' },

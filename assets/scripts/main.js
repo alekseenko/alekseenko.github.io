@@ -33,6 +33,7 @@ const session = createConsole({
   transcript: $('[data-transcript]'),
   lines: $('[data-lines]'),
   input: $('[data-input]'),
+  promptRow: $('[data-prompt-row]'),
   promptLabel: $('[data-prompt]'),
   typed: $('[data-typed]'),
   caret: $('[data-caret]'),
@@ -58,6 +59,10 @@ function bindDefaultChips() {
 }
 
 function renderChips(mode) {
+  // While a game holds the prompt, the standing hints describe a keyboard that
+  // no longer does any of those things — so the bar shows only the game's keys.
+  chipsHost.parentElement.classList.toggle('hints--mode', Boolean(mode));
+
   if (!mode) {
     chipsHost.innerHTML = DEFAULT_CHIPS;
     bindDefaultChips();
